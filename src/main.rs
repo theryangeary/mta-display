@@ -53,14 +53,71 @@ impl BulbDisplayConfig {
     }
 }
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn train_bullet_pattern() -> Vec<Vec<Rgb<u8>>> {
+    let Bl = Rgb([0, 204, 255]);
+    let W1 = Rgb([255, 255, 255]);
+    let B0 = Rgb([0, 0, 0]);
+    let mut pattern = vec![
+        vec![
+            B0, B0, B0, B0, B0, Bl, Bl, Bl, Bl, Bl, Bl, B0, B0, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, Bl, Bl, Bl, Bl, Bl, Bl, Bl, Bl, Bl, Bl, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl, B0, B0,
+        ],
+        vec![
+            B0, Bl, Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl, Bl, B0,
+        ],
+        vec![
+            B0, Bl, Bl, Bl, Bl, Bl, W1, W1, W1, W1, Bl, Bl, Bl, Bl, Bl, B0,
+        ],
+        vec![
+            Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl,
+        ],
+        vec![
+            Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl,
+        ],
+        vec![
+            Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl,
+        ],
+        vec![
+            Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl,
+        ],
+        vec![
+            Bl, Bl, Bl, Bl, W1, W1, W1, W1, W1, W1, W1, W1, Bl, Bl, Bl, Bl,
+        ],
+        vec![
+            Bl, Bl, Bl, Bl, W1, W1, W1, W1, W1, W1, W1, W1, Bl, Bl, Bl, Bl,
+        ],
+        vec![
+            B0, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, B0,
+        ],
+        vec![
+            B0, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, B0,
+        ],
+        vec![
+            B0, B0, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, Bl, Bl, Bl, Bl, Bl, Bl, Bl, Bl, Bl, Bl, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, B0, B0, Bl, Bl, Bl, Bl, Bl, Bl, B0, B0, B0, B0, B0,
+        ],
+    ];
 
+    pattern
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     // config setup
     let margin = 10;
-    let bulb_rows = 15;
-    let bulb_cols = 161;
+    let bulb_rows = 16;
+    let bulb_cols = 160;
     let bulb_bounding_box_size = 20;
-    let bulb_size_ratio = 0.6;
+    let bulb_size_ratio = 0.75;
     let config = BulbDisplayConfig::new(
         bulb_rows,
         bulb_cols,
@@ -70,7 +127,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     // Example bulb color array (all bulbs set to a warm yellow)
-    let bulb_array = vec![vec![Rgb([255, 200, 50]); bulb_cols.into()]; bulb_rows.into()];
+    let mut bulb_array = vec![vec![Rgb([0, 0, 0]); bulb_cols.into()]; bulb_rows.into()];
+    // draw an A train bullet in the left edge of the bulb array
+    let train_bullet = train_bullet_pattern();
+    for (row_num, row) in train_bullet.iter().enumerate() {
+        for (col_num, &rgb) in row.iter().enumerate() {
+            bulb_array[row_num][col_num] = rgb;
+        }
+    }
 
     // 1. Set up GIF encoder
     let num_frames = 1;
@@ -109,7 +173,7 @@ fn draw_bulb(
     config: &BulbDisplayConfig,
     row_num: u16,
     col_num: u16,
-    rgb: Rgb<u8>
+    rgb: Rgb<u8>,
 ) {
     let top_left = (
         config.display_margin + (col_num * config.bulb_region_side_length()),
@@ -131,7 +195,7 @@ fn draw_bulb(
             {
                 img[(x as u32, y as u32)] = rgb;
             } else {
-                img[(x as u32, y as u32)] = Rgb([50,50,50]);
+                img[(x as u32, y as u32)] = Rgb([50, 50, 50]);
             }
         }
     }
