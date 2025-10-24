@@ -53,11 +53,12 @@ impl BulbDisplayConfig {
     }
 }
 
+#[allow(non_snake_case)]
 fn train_bullet_pattern() -> Vec<Vec<Rgb<u8>>> {
     let Bl = Rgb([0, 204, 255]);
     let W1 = Rgb([255, 255, 255]);
     let B0 = Rgb([0, 0, 0]);
-    let mut pattern = vec![
+    let pattern = vec![
         vec![
             B0, B0, B0, B0, B0, Bl, Bl, Bl, Bl, Bl, Bl, B0, B0, B0, B0, B0,
         ],
