@@ -54,6 +54,8 @@ impl BulbDisplayConfig {
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+
+    // config setup
     let margin = 10;
     let bulb_rows = 15;
     let bulb_cols = 161;
@@ -66,6 +68,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         bulb_bounding_box_size,
         bulb_size_ratio,
     );
+
+    // Example bulb color array (all bulbs set to a warm yellow)
     let bulb_array = vec![vec![Rgb([255, 200, 50]); bulb_cols.into()]; bulb_rows.into()];
 
     // 1. Set up GIF encoder
