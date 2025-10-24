@@ -66,7 +66,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         bulb_bounding_box_size,
         bulb_size_ratio,
     );
-    let bulb_array = vec![vec![true; bulb_cols.into()]; bulb_rows.into()];
+    let bulb_array = vec![vec![Rgb([255, 200, 50]); bulb_cols.into()]; bulb_rows.into()];
 
     // 1. Set up GIF encoder
     let num_frames = 1;
@@ -87,8 +87,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         // Draw your graphics here
         // ... manipulate pixels in img ...
         for (row_num, row) in bulb_array.iter().enumerate() {
-            for (col_num, is_on) in row.iter().enumerate() {
-                draw_bulb(&mut img, &config, row_num as u16, col_num as u16, *is_on)
+            for (col_num, rgb) in row.iter().enumerate() {
+                draw_bulb(&mut img, &config, row_num as u16, col_num as u16, *rgb)
             }
         }
 
@@ -105,7 +105,7 @@ fn draw_bulb(
     config: &BulbDisplayConfig,
     row_num: u16,
     col_num: u16,
-    is_on: bool,
+    rgb: Rgb<u8>
 ) {
     let top_left = (
         config.display_margin + (col_num * config.bulb_region_side_length()),
@@ -125,11 +125,9 @@ fn draw_bulb(
             if ((x.abs_diff(center.0) as u32).pow(2) + (y.abs_diff(center.1) as u32).pow(2)) as f64
                 <= ((config.bulb_width() as f64) / 2.0).powi(2)
             {
-                if is_on {
-                    img[(x as u32, y as u32)] = Rgb([255, 200, 50]);
-                } else {
-                    img[(x as u32, y as u32)] = Rgb([100, 100, 100]);
-                }
+                img[(x as u32, y as u32)] = rgb;
+            } else {
+                img[(x as u32, y as u32)] = Rgb([50,50,50]);
             }
         }
     }
