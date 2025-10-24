@@ -2,40 +2,135 @@ use gif::{Encoder, Frame, Repeat};
 use image::{ImageBuffer, Rgb};
 use std::fs::File;
 
+struct BulbDisplayConfig {
+    num_bulb_rows: u16,
+    num_bulb_cols: u16,
+    /// the number of pixels around the border of the display that do not have bulbs on them
+    display_margin: u16,
+    /// the resulting image height in pixels
+    img_height: u16,
+    /// the resulting image width in pixels
+    img_width: u16,
+    /// bulb_size_ratio is the ratio of the bulb diameter to the bounding box width
+    bulb_size_ratio: f64,
+}
+
+impl BulbDisplayConfig {
+    fn new(
+        num_bulb_rows: u16,
+        num_bulb_cols: u16,
+        display_margin: u16,
+        bulb_bounding_box_size: u16,
+        bulb_size_ratio: f64,
+    ) -> Self {
+        let height = (num_bulb_rows * bulb_bounding_box_size) + (2 * display_margin);
+        let width = (num_bulb_cols * bulb_bounding_box_size) + (2 * display_margin);
+
+        Self {
+            num_bulb_rows,
+            num_bulb_cols,
+            display_margin,
+            img_height: height,
+            img_width: width,
+            bulb_size_ratio,
+        }
+    }
+
+    fn bulb_region_side_length(&self) -> u16 {
+        (self.img_height - (2 * self.display_margin)) / self.num_bulb_rows
+    }
+
+    fn bulb_width(&self) -> u16 {
+        (self.bulb_region_side_length() as f64 * self.bulb_size_ratio) as u16
+    }
+
+    fn img_width(&self) -> u16 {
+        self.img_width
+    }
+
+    fn img_height(&self) -> u16 {
+        self.img_height
+    }
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let width = 100;
-    let height = 100;
-    let num_frames = 1;
+    let margin = 10;
+    let bulb_rows = 15;
+    let bulb_cols = 161;
+    let bulb_bounding_box_size = 20;
+    let bulb_size_ratio = 0.6;
+    let config = BulbDisplayConfig::new(
+        bulb_rows,
+        bulb_cols,
+        margin,
+        bulb_bounding_box_size,
+        bulb_size_ratio,
+    );
+    let bulb_array = vec![vec![true; bulb_cols.into()]; bulb_rows.into()];
 
     // 1. Set up GIF encoder
+    let num_frames = 1;
     let mut image_file = File::create("output.gif")?;
-    let mut encoder = Encoder::new(&mut image_file, width, height, &[])?;
+    let mut encoder = Encoder::new(
+        &mut image_file,
+        config.img_width(),
+        config.img_height(),
+        &[],
+    )?;
     encoder.set_repeat(Repeat::Infinite)?;
 
     // 2. Generate frames
     for i in 0..num_frames {
-        let mut img: ImageBuffer<Rgb<_>, Vec<u8>> = ImageBuffer::new(width.into(), height.into());
+        let mut img: ImageBuffer<Rgb<_>, Vec<u8>> =
+            ImageBuffer::new(config.img_width().into(), config.img_height().into());
 
         // Draw your graphics here
         // ... manipulate pixels in img ...
-        let (w, h) = img.dimensions();
-        for row_num in 0..h {
-            for col_num in 0..w {
-                let row_from_center = u32::abs_diff(h / 2, row_num);
-                let col_from_center = u32::abs_diff(w / 2, col_num);
-                if ((row_from_center * row_from_center) + (col_from_center * col_from_center))
-                    .isqrt()
-                    < 50
-                {
-                    img[(row_num, col_num)] = Rgb([24, 48, 96]);
-                };
+        for (row_num, row) in bulb_array.iter().enumerate() {
+            for (col_num, is_on) in row.iter().enumerate() {
+                draw_bulb(&mut img, &config, row_num as u16, col_num as u16, *is_on)
             }
         }
 
         // 3. Add frame to GIF
-        let frame = Frame::from_rgb(width, height, &img.into_raw());
+        let frame = Frame::from_rgb(config.img_width(), config.img_height(), &img.into_raw());
         encoder.write_frame(&frame)?;
     }
 
     Ok(())
+}
+
+fn draw_bulb(
+    img: &mut ImageBuffer<Rgb<u8>, Vec<u8>>,
+    config: &BulbDisplayConfig,
+    row_num: u16,
+    col_num: u16,
+    is_on: bool,
+) {
+    let top_left = (
+        config.display_margin + (col_num * config.bulb_region_side_length()),
+        config.display_margin + (row_num * config.bulb_region_side_length()),
+    );
+    let bottom_right = (
+        top_left.0 + config.bulb_region_side_length(),
+        top_left.1 + config.bulb_region_side_length(),
+    );
+    let center = (
+        (top_left.0 + bottom_right.0) / 2,
+        (top_left.1 + bottom_right.1) / 2,
+    );
+
+    for x in top_left.0..bottom_right.0 {
+        for y in top_left.1..bottom_right.1 {
+            if ((x.abs_diff(center.0) as u32).pow(2) + (y.abs_diff(center.1) as u32).pow(2)) as f64
+                <= ((config.bulb_width() as f64) / 2.0).powi(2)
+            {
+                if is_on {
+                    img[(x as u32, y as u32)] = Rgb([255, 200, 50]);
+                } else {
+                    img[(x as u32, y as u32)] = Rgb([100, 100, 100]);
+                }
+            }
+        }
+    }
 }
