@@ -112,6 +112,54 @@ fn train_bullet_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
+fn letter_t_pattern() -> Vec<Vec<Rgb<u8>>> {
+    let W1 = Rgb([255, 255, 255]);
+    let B0 = Rgb([0, 0, 0]);
+    let pattern = vec![
+        vec![W1, W1, W1, W1, W1, W1, W1, W1],
+        vec![W1, W1, W1, W1, W1, W1, W1, W1],
+        vec![B0, B0, B0, W1, W1, B0, B0, B0],
+        vec![B0, B0, B0, W1, W1, B0, B0, B0],
+        vec![B0, B0, B0, W1, W1, B0, B0, B0],
+        vec![B0, B0, B0, W1, W1, B0, B0, B0],
+        vec![B0, B0, B0, W1, W1, B0, B0, B0],
+        vec![B0, B0, B0, W1, W1, B0, B0, B0],
+        vec![B0, B0, B0, W1, W1, B0, B0, B0],
+        vec![B0, B0, B0, W1, W1, B0, B0, B0],
+        vec![B0, B0, B0, W1, W1, B0, B0, B0],
+        vec![B0, B0, B0, W1, W1, B0, B0, B0],
+        vec![B0, B0, B0, W1, W1, B0, B0, B0],
+        vec![B0, B0, B0, W1, W1, B0, B0, B0],
+        vec![B0, B0, B0, W1, W1, B0, B0, B0],
+        vec![B0, B0, B0, W1, W1, B0, B0, B0],
+    ];
+    pattern
+}
+
+fn letter_h_pattern() -> Vec<Vec<Rgb<u8>>> {
+    let W1 = Rgb([255, 255, 255]);
+    let B0 = Rgb([0, 0, 0]);
+    let pattern = vec![
+        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
+        vec![W1, W1, W1, W1, W1, W1, W1, W1,],
+        vec![W1, W1, W1, W1, W1, W1, W1, W1,],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
+    ];
+    pattern
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // config setup
     let margin = 10;
@@ -136,6 +184,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             bulb_array[row_num][col_num] = rgb;
         }
     }
+
+    let message = "THTHTHTHTH";
+
+    write_text(&mut bulb_array, &message)?;
 
     // 1. Set up GIF encoder
     let num_frames = 1;
@@ -200,4 +252,28 @@ fn draw_bulb(
             }
         }
     }
+}
+
+fn write_text(
+    bulb_array: &mut Vec<Vec<Rgb<u8>>>,
+    message: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    for (i, c) in message.chars().enumerate() {
+        // todo find actual bullet width
+        let bullet_width = 20;
+
+        let char_pattern = match c {
+            'T' => letter_t_pattern(),
+            'H' => letter_h_pattern(),
+            _ => continue,
+        };
+
+        // todo bounds checking - too long message causes panic
+        for (row_num, row) in char_pattern.iter().enumerate() {
+            for (col_num, &rgb) in row.iter().enumerate() {
+                bulb_array[row_num][bullet_width + col_num + (i as usize * 10)] = rgb;
+            }
+        }
+    }
+    Ok(())
 }
