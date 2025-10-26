@@ -1,66 +1,72 @@
 use image::Rgb;
 
 pub const LETTER_PATTERN_WIDTH: u16 = 8;
+#[allow(dead_code)]
 pub const LETTER_PATTERN_HEIGHT: u16 = 16;
 pub const LETTER_PATTERN_SPACING: u16 = 2;
-pub const LETTER_PATTERN_SLOT_WIDTH: u16 =
-    LETTER_PATTERN_WIDTH + LETTER_PATTERN_SPACING;
+pub const LETTER_PATTERN_SLOT_WIDTH: u16 = LETTER_PATTERN_WIDTH + LETTER_PATTERN_SPACING;
 pub const TRAIN_BULLET_PATTERN_WIDTH: u16 = 16;
+#[allow(dead_code)]
 pub const TRAIN_BULLET_PATTERN_HEIGHT: u16 = 16;
 
-#[allow(non_snake_case)]
-pub(crate) fn train_bullet_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let Bl = Rgb([0, 204, 255]);
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+
+// short names for colors used in patterns, makes patterns easier to read as they becomes somewhat 1:1 aspect ratio
+/// White
+const W1: Rgb<u8> = Rgb([255, 255, 255]);
+/// Black
+const B0: Rgb<u8> = Rgb([0, 0, 0]);
+/// ACE blue
+const BL: Rgb<u8> = Rgb([0, 204, 255]);
+
+pub fn train_bullet_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![
-            B0, B0, B0, B0, B0, Bl, Bl, Bl, Bl, Bl, Bl, B0, B0, B0, B0, B0,
+            B0, B0, B0, B0, B0, BL, BL, BL, BL, BL, BL, B0, B0, B0, B0, B0,
         ],
         vec![
-            B0, B0, B0, Bl, Bl, Bl, Bl, Bl, Bl, Bl, Bl, Bl, Bl, B0, B0, B0,
+            B0, B0, B0, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL, B0, B0, B0,
         ],
         vec![
-            B0, B0, Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl, B0, B0,
+            B0, B0, BL, BL, BL, BL, BL, W1, W1, BL, BL, BL, BL, BL, B0, B0,
         ],
         vec![
-            B0, Bl, Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl, Bl, B0,
+            B0, BL, BL, BL, BL, BL, BL, W1, W1, BL, BL, BL, BL, BL, BL, B0,
         ],
         vec![
-            B0, Bl, Bl, Bl, Bl, Bl, W1, W1, W1, W1, Bl, Bl, Bl, Bl, Bl, B0,
+            B0, BL, BL, BL, BL, BL, W1, W1, W1, W1, BL, BL, BL, BL, BL, B0,
         ],
         vec![
-            Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl,
+            BL, BL, BL, BL, BL, W1, W1, BL, BL, W1, W1, BL, BL, BL, BL, BL,
         ],
         vec![
-            Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl,
+            BL, BL, BL, BL, BL, W1, W1, BL, BL, W1, W1, BL, BL, BL, BL, BL,
         ],
         vec![
-            Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl,
+            BL, BL, BL, BL, BL, W1, W1, BL, BL, W1, W1, BL, BL, BL, BL, BL,
         ],
         vec![
-            Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl,
+            BL, BL, BL, BL, W1, W1, BL, BL, BL, BL, W1, W1, BL, BL, BL, BL,
         ],
         vec![
-            Bl, Bl, Bl, Bl, W1, W1, W1, W1, W1, W1, W1, W1, Bl, Bl, Bl, Bl,
+            BL, BL, BL, BL, W1, W1, W1, W1, W1, W1, W1, W1, BL, BL, BL, BL,
         ],
         vec![
-            Bl, Bl, Bl, Bl, W1, W1, W1, W1, W1, W1, W1, W1, Bl, Bl, Bl, Bl,
+            BL, BL, BL, BL, W1, W1, W1, W1, W1, W1, W1, W1, BL, BL, BL, BL,
         ],
         vec![
-            B0, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, B0,
+            B0, BL, BL, W1, W1, BL, BL, BL, BL, BL, BL, W1, W1, BL, BL, B0,
         ],
         vec![
-            B0, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, B0,
+            B0, BL, BL, W1, W1, BL, BL, BL, BL, BL, BL, W1, W1, BL, BL, B0,
         ],
         vec![
-            B0, B0, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, B0, B0,
+            B0, B0, BL, W1, W1, BL, BL, BL, BL, BL, BL, W1, W1, BL, B0, B0,
         ],
         vec![
-            B0, B0, B0, Bl, Bl, Bl, Bl, Bl, Bl, Bl, Bl, Bl, Bl, B0, B0, B0,
+            B0, B0, B0, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL, B0, B0, B0,
         ],
         vec![
-            B0, B0, B0, B0, B0, Bl, Bl, Bl, Bl, Bl, Bl, B0, B0, B0, B0, B0,
+            B0, B0, B0, B0, B0, BL, BL, BL, BL, BL, BL, B0, B0, B0, B0, B0,
         ],
     ];
 
@@ -70,7 +76,7 @@ pub(crate) fn train_bullet_pattern() -> Vec<Vec<Rgb<u8>>> {
 // Patterns for letters A-Z and space
 // TODO check if they actually match MTA display fonts
 
-pub(crate) fn pattern_for_letter(letter: char) -> Vec<Vec<Rgb<u8>>> {
+pub fn pattern_for_letter(letter: char) -> Vec<Vec<Rgb<u8>>> {
     match letter {
         ' ' => space_pattern(),
         'A' => letter_a_pattern(),
@@ -103,8 +109,7 @@ pub(crate) fn pattern_for_letter(letter: char) -> Vec<Vec<Rgb<u8>>> {
     }
 }
 
-pub(crate) fn space_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let B0 = Rgb([0, 0, 0]);
+fn space_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![B0, B0, B0, B0, B0, B0, B0, B0],
         vec![B0, B0, B0, B0, B0, B0, B0, B0],
@@ -126,9 +131,7 @@ pub(crate) fn space_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_a_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_a_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![B0, B0, W1, W1, W1, W1, B0, B0],
         vec![B0, W1, W1, W1, W1, W1, W1, B0],
@@ -150,9 +153,7 @@ pub(crate) fn letter_a_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_b_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_b_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![W1, W1, W1, W1, W1, W1, B0, B0],
         vec![W1, W1, W1, W1, W1, W1, W1, B0],
@@ -174,9 +175,7 @@ pub(crate) fn letter_b_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_c_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_c_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![B0, W1, W1, W1, W1, W1, W1, B0],
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
@@ -198,9 +197,7 @@ pub(crate) fn letter_c_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_d_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_d_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![W1, W1, W1, W1, W1, W1, B0, B0],
         vec![W1, W1, W1, W1, W1, W1, W1, B0],
@@ -222,9 +219,7 @@ pub(crate) fn letter_d_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_e_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_e_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
@@ -246,9 +241,7 @@ pub(crate) fn letter_e_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_f_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_f_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
@@ -270,9 +263,7 @@ pub(crate) fn letter_f_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_g_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_g_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![B0, W1, W1, W1, W1, W1, W1, B0],
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
@@ -294,9 +285,7 @@ pub(crate) fn letter_g_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_h_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_h_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
@@ -318,9 +307,7 @@ pub(crate) fn letter_h_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_i_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_i_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
@@ -342,9 +329,7 @@ pub(crate) fn letter_i_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_j_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_j_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![B0, B0, B0, B0, W1, W1, W1, W1],
         vec![B0, B0, B0, B0, W1, W1, W1, W1],
@@ -366,9 +351,7 @@ pub(crate) fn letter_j_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_k_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_k_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
         vec![W1, W1, B0, B0, B0, W1, W1, W1],
@@ -390,9 +373,7 @@ pub(crate) fn letter_k_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_l_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_l_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![W1, W1, B0, B0, B0, B0, B0, B0],
         vec![W1, W1, B0, B0, B0, B0, B0, B0],
@@ -414,9 +395,7 @@ pub(crate) fn letter_l_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_m_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_m_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
         vec![W1, W1, W1, B0, B0, W1, W1, W1],
@@ -438,9 +417,7 @@ pub(crate) fn letter_m_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_n_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_n_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
         vec![W1, W1, W1, B0, B0, B0, W1, W1],
@@ -462,9 +439,7 @@ pub(crate) fn letter_n_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_o_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_o_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![B0, W1, W1, W1, W1, W1, W1, B0],
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
@@ -486,9 +461,7 @@ pub(crate) fn letter_o_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_p_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_p_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![W1, W1, W1, W1, W1, W1, B0, B0],
         vec![W1, W1, W1, W1, W1, W1, W1, B0],
@@ -510,9 +483,7 @@ pub(crate) fn letter_p_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_q_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_q_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![B0, W1, W1, W1, W1, W1, W1, B0],
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
@@ -534,9 +505,7 @@ pub(crate) fn letter_q_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_r_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_r_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![W1, W1, W1, W1, W1, W1, B0, B0],
         vec![W1, W1, W1, W1, W1, W1, W1, B0],
@@ -558,9 +527,7 @@ pub(crate) fn letter_r_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_s_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_s_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![B0, W1, W1, W1, W1, W1, W1, B0],
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
@@ -582,9 +549,7 @@ pub(crate) fn letter_s_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_t_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_t_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
@@ -606,9 +571,7 @@ pub(crate) fn letter_t_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_u_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_u_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
@@ -630,9 +593,7 @@ pub(crate) fn letter_u_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_v_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_v_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
@@ -654,9 +615,7 @@ pub(crate) fn letter_v_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_w_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_w_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
@@ -678,9 +637,7 @@ pub(crate) fn letter_w_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_x_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_x_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
         vec![W1, W1, W1, B0, B0, W1, W1, W1],
@@ -702,9 +659,7 @@ pub(crate) fn letter_x_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_y_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_y_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
@@ -726,9 +681,7 @@ pub(crate) fn letter_y_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-pub(crate) fn letter_z_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
+fn letter_z_pattern() -> Vec<Vec<Rgb<u8>>> {
     let pattern = vec![
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
