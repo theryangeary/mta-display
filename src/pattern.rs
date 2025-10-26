@@ -61,6 +61,39 @@ pub(crate) fn train_bullet_pattern() -> Vec<Vec<Rgb<u8>>> {
 // Patterns for letters A-Z and space
 // TODO check if they actually match MTA display fonts
 
+pub(crate) fn pattern_for_letter(letter: char) -> Vec<Vec<Rgb<u8>>> {
+    match letter {
+        ' ' => space_pattern(),
+        'A' => letter_a_pattern(),
+        'B' => letter_b_pattern(),
+        'C' => letter_c_pattern(),
+        'D' => letter_d_pattern(),
+        'E' => letter_e_pattern(),
+        'F' => letter_f_pattern(),
+        'G' => letter_g_pattern(),
+        'H' => letter_h_pattern(),
+        'I' => letter_i_pattern(),
+        'J' => letter_j_pattern(),
+        'K' => letter_k_pattern(),
+        'L' => letter_l_pattern(),
+        'M' => letter_m_pattern(),
+        'N' => letter_n_pattern(),
+        'O' => letter_o_pattern(),
+        'P' => letter_p_pattern(),
+        'Q' => letter_q_pattern(),
+        'R' => letter_r_pattern(),
+        'S' => letter_s_pattern(),
+        'T' => letter_t_pattern(),
+        'U' => letter_u_pattern(),
+        'V' => letter_v_pattern(),
+        'W' => letter_w_pattern(),
+        'X' => letter_x_pattern(),
+        'Y' => letter_y_pattern(),
+        'Z' => letter_z_pattern(),
+        _ => space_pattern(),
+    }
+}
+
 pub(crate) fn space_pattern() -> Vec<Vec<Rgb<u8>>> {
     let B0 = Rgb([0, 0, 0]);
     let pattern = vec![

@@ -1,6 +1,6 @@
 use gif::{Encoder, Frame, Repeat};
 use image::{ImageBuffer, Rgb};
-use std::fs::File;
+use std::{char, fs::File};
 
 mod pattern;
 
@@ -195,6 +195,7 @@ fn write_text(
     // todo find actual bullet width
     let bullet_width = 20;
     let max_chars = (num_cols - bullet_width) / 10;
+    // todo split on words when possible
     let left_pad = if message.len() < max_chars {
         bullet_width + ((max_chars - message.len()) * 10) / 2
     } else {
@@ -202,36 +203,7 @@ fn write_text(
     };
 
     'CHARS: for (i, c) in message.chars().enumerate() {
-        let char_pattern = match c {
-            ' ' => pattern::space_pattern(),
-            'A' => pattern::letter_a_pattern(),
-            'B' => pattern::letter_b_pattern(),
-            'C' => pattern::letter_c_pattern(),
-            'D' => pattern::letter_d_pattern(),
-            'E' => pattern::letter_e_pattern(),
-            'F' => pattern::letter_f_pattern(),
-            'G' => pattern::letter_g_pattern(),
-            'H' => pattern::letter_h_pattern(),
-            'I' => pattern::letter_i_pattern(),
-            'J' => pattern::letter_j_pattern(),
-            'K' => pattern::letter_k_pattern(),
-            'L' => pattern::letter_l_pattern(),
-            'M' => pattern::letter_m_pattern(),
-            'N' => pattern::letter_n_pattern(),
-            'O' => pattern::letter_o_pattern(),
-            'P' => pattern::letter_p_pattern(),
-            'Q' => pattern::letter_q_pattern(),
-            'R' => pattern::letter_r_pattern(),
-            'S' => pattern::letter_s_pattern(),
-            'T' => pattern::letter_t_pattern(),
-            'U' => pattern::letter_u_pattern(),
-            'V' => pattern::letter_v_pattern(),
-            'W' => pattern::letter_w_pattern(),
-            'X' => pattern::letter_x_pattern(),
-            'Y' => pattern::letter_y_pattern(),
-            'Z' => pattern::letter_z_pattern(),
-            _ => continue,
-        };
+        let char_pattern = pattern::pattern_for_letter(c);
 
         for (row_num, row) in char_pattern.iter().enumerate() {
             for (col_num, &rgb) in row.iter().enumerate() {
