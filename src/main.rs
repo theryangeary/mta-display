@@ -2,6 +2,8 @@ use gif::{Encoder, Frame, Repeat};
 use image::{ImageBuffer, Rgb};
 use std::fs::File;
 
+mod pattern;
+
 struct BulbDisplay {
     pub bulbs: Vec<Vec<Rgb<u8>>>,
 }
@@ -71,113 +73,6 @@ impl BulbDisplayConfig {
     }
 }
 
-#[allow(non_snake_case)]
-fn train_bullet_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let Bl = Rgb([0, 204, 255]);
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
-    let pattern = vec![
-        vec![
-            B0, B0, B0, B0, B0, Bl, Bl, Bl, Bl, Bl, Bl, B0, B0, B0, B0, B0,
-        ],
-        vec![
-            B0, B0, B0, Bl, Bl, Bl, Bl, Bl, Bl, Bl, Bl, Bl, Bl, B0, B0, B0,
-        ],
-        vec![
-            B0, B0, Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl, B0, B0,
-        ],
-        vec![
-            B0, Bl, Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl, Bl, B0,
-        ],
-        vec![
-            B0, Bl, Bl, Bl, Bl, Bl, W1, W1, W1, W1, Bl, Bl, Bl, Bl, Bl, B0,
-        ],
-        vec![
-            Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl,
-        ],
-        vec![
-            Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl,
-        ],
-        vec![
-            Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl,
-        ],
-        vec![
-            Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl,
-        ],
-        vec![
-            Bl, Bl, Bl, Bl, W1, W1, W1, W1, W1, W1, W1, W1, Bl, Bl, Bl, Bl,
-        ],
-        vec![
-            Bl, Bl, Bl, Bl, W1, W1, W1, W1, W1, W1, W1, W1, Bl, Bl, Bl, Bl,
-        ],
-        vec![
-            B0, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, B0,
-        ],
-        vec![
-            B0, Bl, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, Bl, B0,
-        ],
-        vec![
-            B0, B0, Bl, W1, W1, Bl, Bl, Bl, Bl, Bl, Bl, W1, W1, Bl, B0, B0,
-        ],
-        vec![
-            B0, B0, B0, Bl, Bl, Bl, Bl, Bl, Bl, Bl, Bl, Bl, Bl, B0, B0, B0,
-        ],
-        vec![
-            B0, B0, B0, B0, B0, Bl, Bl, Bl, Bl, Bl, Bl, B0, B0, B0, B0, B0,
-        ],
-    ];
-
-    pattern
-}
-
-fn letter_t_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
-    let pattern = vec![
-        vec![W1, W1, W1, W1, W1, W1, W1, W1],
-        vec![W1, W1, W1, W1, W1, W1, W1, W1],
-        vec![B0, B0, B0, W1, W1, B0, B0, B0],
-        vec![B0, B0, B0, W1, W1, B0, B0, B0],
-        vec![B0, B0, B0, W1, W1, B0, B0, B0],
-        vec![B0, B0, B0, W1, W1, B0, B0, B0],
-        vec![B0, B0, B0, W1, W1, B0, B0, B0],
-        vec![B0, B0, B0, W1, W1, B0, B0, B0],
-        vec![B0, B0, B0, W1, W1, B0, B0, B0],
-        vec![B0, B0, B0, W1, W1, B0, B0, B0],
-        vec![B0, B0, B0, W1, W1, B0, B0, B0],
-        vec![B0, B0, B0, W1, W1, B0, B0, B0],
-        vec![B0, B0, B0, W1, W1, B0, B0, B0],
-        vec![B0, B0, B0, W1, W1, B0, B0, B0],
-        vec![B0, B0, B0, W1, W1, B0, B0, B0],
-        vec![B0, B0, B0, W1, W1, B0, B0, B0],
-    ];
-    pattern
-}
-
-fn letter_h_pattern() -> Vec<Vec<Rgb<u8>>> {
-    let W1 = Rgb([255, 255, 255]);
-    let B0 = Rgb([0, 0, 0]);
-    let pattern = vec![
-        vec![W1, W1, B0, B0, B0, B0, W1, W1],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1],
-        vec![W1, W1, W1, W1, W1, W1, W1, W1],
-        vec![W1, W1, W1, W1, W1, W1, W1, W1],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1],
-    ];
-    pattern
-}
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // config setup
     let margin = 10;
@@ -193,16 +88,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         bulb_size_ratio,
     );
 
-    let message = "THTHHTHHHTHHHHTHHHHH";
+    let message = "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG ".to_uppercase();
 
     let mut frames = vec![];
-    let mut message_slice = message;
+    let mut message_slice = message.as_str();
 
     while message_slice.len() > 0 {
         let mut bulb_array = vec![vec![Rgb([0, 0, 0]); bulb_cols.into()]; bulb_rows.into()];
 
         // draw an A train bullet in the left edge of the bulb array
-        let train_bullet = train_bullet_pattern();
+        let train_bullet = pattern::train_bullet_pattern();
         for (row_num, row) in train_bullet.iter().enumerate() {
             for (col_num, &rgb) in row.iter().enumerate() {
                 bulb_array[row_num][col_num] = rgb;
@@ -308,8 +203,33 @@ fn write_text(
 
     'CHARS: for (i, c) in message.chars().enumerate() {
         let char_pattern = match c {
-            'T' => letter_t_pattern(),
-            'H' => letter_h_pattern(),
+            ' ' => pattern::space_pattern(),
+            'A' => pattern::letter_a_pattern(),
+            'B' => pattern::letter_b_pattern(),
+            'C' => pattern::letter_c_pattern(),
+            'D' => pattern::letter_d_pattern(),
+            'E' => pattern::letter_e_pattern(),
+            'F' => pattern::letter_f_pattern(),
+            'G' => pattern::letter_g_pattern(),
+            'H' => pattern::letter_h_pattern(),
+            'I' => pattern::letter_i_pattern(),
+            'J' => pattern::letter_j_pattern(),
+            'K' => pattern::letter_k_pattern(),
+            'L' => pattern::letter_l_pattern(),
+            'M' => pattern::letter_m_pattern(),
+            'N' => pattern::letter_n_pattern(),
+            'O' => pattern::letter_o_pattern(),
+            'P' => pattern::letter_p_pattern(),
+            'Q' => pattern::letter_q_pattern(),
+            'R' => pattern::letter_r_pattern(),
+            'S' => pattern::letter_s_pattern(),
+            'T' => pattern::letter_t_pattern(),
+            'U' => pattern::letter_u_pattern(),
+            'V' => pattern::letter_v_pattern(),
+            'W' => pattern::letter_w_pattern(),
+            'X' => pattern::letter_x_pattern(),
+            'Y' => pattern::letter_y_pattern(),
+            'Z' => pattern::letter_z_pattern(),
             _ => continue,
         };
 
