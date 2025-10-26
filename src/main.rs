@@ -2,6 +2,24 @@ use gif::{Encoder, Frame, Repeat};
 use image::{ImageBuffer, Rgb};
 use std::fs::File;
 
+struct BulbDisplay {
+    pub bulbs: Vec<Vec<Rgb<u8>>>,
+}
+
+impl std::ops::Deref for BulbDisplay {
+    type Target = Vec<Vec<Rgb<u8>>>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.bulbs
+    }
+}
+
+impl std::ops::DerefMut for BulbDisplay {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.bulbs
+    }
+}
+
 struct BulbDisplayConfig {
     num_bulb_rows: u16,
     num_bulb_cols: u16,
@@ -140,22 +158,22 @@ fn letter_h_pattern() -> Vec<Vec<Rgb<u8>>> {
     let W1 = Rgb([255, 255, 255]);
     let B0 = Rgb([0, 0, 0]);
     let pattern = vec![
-        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
-        vec![W1, W1, W1, W1, W1, W1, W1, W1,],
-        vec![W1, W1, W1, W1, W1, W1, W1, W1,],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
-        vec![W1, W1, B0, B0, B0, B0, W1, W1,],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, W1, W1, W1, W1, W1, W1],
+        vec![W1, W1, W1, W1, W1, W1, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
     ];
     pattern
 }
@@ -175,22 +193,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         bulb_size_ratio,
     );
 
-    // Example bulb color array (all bulbs set to a warm yellow)
-    let mut bulb_array = vec![vec![Rgb([0, 0, 0]); bulb_cols.into()]; bulb_rows.into()];
-    // draw an A train bullet in the left edge of the bulb array
-    let train_bullet = train_bullet_pattern();
-    for (row_num, row) in train_bullet.iter().enumerate() {
-        for (col_num, &rgb) in row.iter().enumerate() {
-            bulb_array[row_num][col_num] = rgb;
+    let message = "THTHHTHHHTHHHHTHHHHH";
+
+    let mut frames = vec![];
+    let mut message_slice = message;
+
+    while message_slice.len() > 0 {
+        let mut bulb_array = vec![vec![Rgb([0, 0, 0]); bulb_cols.into()]; bulb_rows.into()];
+
+        // draw an A train bullet in the left edge of the bulb array
+        let train_bullet = train_bullet_pattern();
+        for (row_num, row) in train_bullet.iter().enumerate() {
+            for (col_num, &rgb) in row.iter().enumerate() {
+                bulb_array[row_num][col_num] = rgb;
+            }
         }
+
+        // write text into the bulb array
+        let chars_written = write_text(&mut bulb_array, &message_slice)?;
+
+        // update pending text to write to next frame
+        message_slice = &message_slice[chars_written..];
+
+        frames.push(bulb_array);
     }
 
-    let message = "THTHTHTHTH";
-
-    write_text(&mut bulb_array, &message)?;
-
     // 1. Set up GIF encoder
-    let num_frames = 1;
     let mut image_file = File::create("output.gif")?;
     let mut encoder = Encoder::new(
         &mut image_file,
@@ -201,7 +229,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     encoder.set_repeat(Repeat::Infinite)?;
 
     // 2. Generate frames
-    for i in 0..num_frames {
+    for bulb_array in frames {
         let mut img: ImageBuffer<Rgb<_>, Vec<u8>> =
             ImageBuffer::new(config.img_width().into(), config.img_height().into());
 
@@ -215,7 +243,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         // 3. Add frame to GIF
         let frame = Frame::from_rgb(config.img_width(), config.img_height(), &img.into_raw());
-        encoder.write_frame(&frame)?;
+
+        let frame_duration = 10;
+        for _ in 0..frame_duration {
+            encoder.write_frame(&frame)?;
+        }
+        
+
     }
 
     Ok(())
@@ -254,11 +288,16 @@ fn draw_bulb(
     }
 }
 
+/// Writes text into the bulb array starting after the bullet's fixed width.
+/// Returns the number of characters from the message that were progressed.
+/// Progressed here indicates that they were written into the bulb array, or skipped
+/// if there was no pattern for that character.
 fn write_text(
     bulb_array: &mut Vec<Vec<Rgb<u8>>>,
     message: &str,
-) -> Result<(), Box<dyn std::error::Error>> {
-    for (i, c) in message.chars().enumerate() {
+) -> Result<usize, Box<dyn std::error::Error>> {
+    let mut ret = 0;
+    'CHARS: for (i, c) in message.chars().enumerate() {
         // todo find actual bullet width
         let bullet_width = 20;
 
@@ -271,9 +310,16 @@ fn write_text(
         // todo bounds checking - too long message causes panic
         for (row_num, row) in char_pattern.iter().enumerate() {
             for (col_num, &rgb) in row.iter().enumerate() {
-                bulb_array[row_num][bullet_width + col_num + (i as usize * 10)] = rgb;
+                let target_row = row_num;
+                let target_col = bullet_width + col_num + (i as usize * 10);
+                if target_row >= bulb_array.len() || target_col >= bulb_array[0].len() {
+                    break 'CHARS;
+                }
+                bulb_array[target_row][target_col] = rgb;
             }
         }
+
+        ret += 1;
     }
-    Ok(())
+    Ok(ret)
 }
