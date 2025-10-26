@@ -1,5 +1,6 @@
 use gif::{Encoder, Frame, Repeat};
 use image::{ImageBuffer, Rgb};
+use std::error::Error;
 use std::fs::File;
 
 mod pattern;
@@ -14,6 +15,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let bulb_cols = 160;
     let bulb_bounding_box_size = 20;
     let bulb_size_ratio = 0.75;
+
     let config = BulbDisplayConfig::new(
         bulb_rows,
         bulb_cols,
@@ -22,10 +24,75 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         bulb_size_ratio,
     );
 
+    let train = types::Train::A;
+
     let message = "ANNA DO YOU LIKE MY SILLY GIF GENERATOR".to_uppercase();
-    let mut words = message.split_whitespace().peekable();
+
+    let message_parts = split_message_into_parts(&config, message);
+
+    let frames = generate_frames_for_message(&config, train, message_parts)?;
+
+    write_frames_to_gif_at_path(&config, frames, "output.gif".into())?;
+
+    Ok(())
+}
+
+fn write_frames_to_gif_at_path(config: &BulbDisplayConfig, frames: Vec<BulbDisplay>, path: std::path::PathBuf) -> Result<(), Box<dyn Error>> {
+    let mut image_file = File::create(path)?;
+    let mut encoder = Encoder::new(
+        &mut image_file,
+        config.img_width(),
+        config.img_height(),
+        &[],
+    )?;
+    encoder.set_repeat(Repeat::Infinite)?;
+    Ok(for bulb_array in frames {
+        let mut img: ImageBuffer<Rgb<_>, Vec<u8>> =
+            ImageBuffer::new(config.img_width().into(), config.img_height().into());
+
+        // Draw your graphics here
+        // ... manipulate pixels in img ...
+        for (row_num, row) in bulb_array.iter().enumerate() {
+            for (col_num, rgb) in row.iter().enumerate() {
+                draw_bulb(&mut img, &config, row_num as u16, col_num as u16, *rgb)
+            }
+        }
+
+        // Add frame to GIF
+        let frame = Frame::from_rgb(config.img_width(), config.img_height(), &img.into_raw());
+
+        let frame_duration = 10;
+        for _ in 0..frame_duration {
+            encoder.write_frame(&frame)?;
+        }
+    })
+}
+
+fn generate_frames_for_message(config: &BulbDisplayConfig, train: types::Train, message_parts: Vec<String>) -> Result<Vec<BulbDisplay>, Box<dyn Error>> {
+    let mut frames = vec![];
+    for msg in &message_parts {
+        let mut bulb_array: BulbDisplay = vec![vec![Rgb([0, 0, 0]); config.num_bulb_cols.into()]; config.num_bulb_rows.into()];
+
+        // draw a train bullet in the left edge of the bulb array
+        let train_bullet = pattern::pattern_for_train(train);
+        for (row_num, row) in train_bullet.iter().enumerate() {
+            for (col_num, &rgb) in row.iter().enumerate() {
+                bulb_array[row_num][col_num] = rgb;
+            }
+        }
+
+        // write text into the bulb array
+        write_text(&mut bulb_array, &msg)?;
+
+        frames.push(bulb_array);
+    }
+    Ok(frames)
+}
+
+fn split_message_into_parts(config: &BulbDisplayConfig, message: String) -> Vec<String> {
     let mut message_parts = vec![];
 
+    let mut words = message.split_whitespace().peekable();
     while let Some(_) = words.peek() {
         let mut message_part = String::new();
 
@@ -42,59 +109,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         message_parts.push(message_part);
     }
-
-    let mut frames = vec![];
-
-    for msg in &message_parts {
-        let mut bulb_array: BulbDisplay = vec![vec![Rgb([0, 0, 0]); bulb_cols.into()]; bulb_rows.into()];
-
-        // draw an A train bullet in the left edge of the bulb array
-        let train_bullet = pattern::train_bullet_pattern();
-        for (row_num, row) in train_bullet.iter().enumerate() {
-            for (col_num, &rgb) in row.iter().enumerate() {
-                bulb_array[row_num][col_num] = rgb;
-            }
-        }
-
-        // write text into the bulb array
-        write_text(&mut bulb_array, &msg)?;
-
-        frames.push(bulb_array);
-    }
-
-    // 1. Set up GIF encoder
-    let mut image_file = File::create("output.gif")?;
-    let mut encoder = Encoder::new(
-        &mut image_file,
-        config.img_width(),
-        config.img_height(),
-        &[],
-    )?;
-    encoder.set_repeat(Repeat::Infinite)?;
-
-    // 2. Generate frames
-    for bulb_array in frames {
-        let mut img: ImageBuffer<Rgb<_>, Vec<u8>> =
-            ImageBuffer::new(config.img_width().into(), config.img_height().into());
-
-        // Draw your graphics here
-        // ... manipulate pixels in img ...
-        for (row_num, row) in bulb_array.iter().enumerate() {
-            for (col_num, rgb) in row.iter().enumerate() {
-                draw_bulb(&mut img, &config, row_num as u16, col_num as u16, *rgb)
-            }
-        }
-
-        // 3. Add frame to GIF
-        let frame = Frame::from_rgb(config.img_width(), config.img_height(), &img.into_raw());
-
-        let frame_duration = 10;
-        for _ in 0..frame_duration {
-            encoder.write_frame(&frame)?;
-        }
-    }
-
-    Ok(())
+    message_parts
 }
 
 fn draw_bulb(

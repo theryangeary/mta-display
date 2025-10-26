@@ -1,6 +1,6 @@
 use image::Rgb;
 
-use crate::types::BulbDisplay;
+use crate::types::{BulbDisplay, Train};
 
 pub const LETTER_PATTERN_WIDTH: u16 = 8;
 #[allow(dead_code)]
@@ -20,7 +20,7 @@ const B0: Rgb<u8> = Rgb([0, 0, 0]);
 /// ACE blue
 const BL: Rgb<u8> = Rgb([0, 204, 255]);
 
-pub fn train_bullet_pattern() -> BulbDisplay {
+pub fn pattern_for_train(train: Train) -> BulbDisplay {
     let pattern = vec![
         vec![
             B0, B0, B0, B0, B0, BL, BL, BL, BL, BL, BL, B0, B0, B0, B0, B0,

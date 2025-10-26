@@ -5,8 +5,8 @@ use crate::pattern;
 pub type BulbDisplay = Vec<Vec<Rgb<u8>>>;
 
 pub struct BulbDisplayConfig {
-    num_bulb_rows: u16,
-    num_bulb_cols: u16,
+    pub num_bulb_rows: u16,
+    pub num_bulb_cols: u16,
     /// the number of pixels around the border of the display that do not have bulbs on them
     pub display_margin: u16,
     /// the resulting image height in pixels
@@ -58,4 +58,30 @@ impl BulbDisplayConfig {
         (self.num_bulb_cols - pattern::TRAIN_BULLET_PATTERN_WIDTH)
             / pattern::LETTER_PATTERN_SLOT_WIDTH
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Train {
+    One,
+    Two,
+    Three,
+    Four,
+    Five,
+    Six,
+    Seven,
+    A,
+    B,
+    C,
+    D,
+    E,
+    F,
+    G,
+    J,
+    L,
+    M,
+    N,
+    Q,
+    R,
+    S,
+    Z,
 }
