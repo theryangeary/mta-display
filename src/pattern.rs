@@ -1,5 +1,7 @@
 use image::Rgb;
 
+use crate::types::BulbDisplay;
+
 pub const LETTER_PATTERN_WIDTH: u16 = 8;
 #[allow(dead_code)]
 pub const LETTER_PATTERN_HEIGHT: u16 = 16;
@@ -18,7 +20,7 @@ const B0: Rgb<u8> = Rgb([0, 0, 0]);
 /// ACE blue
 const BL: Rgb<u8> = Rgb([0, 204, 255]);
 
-pub fn train_bullet_pattern() -> Vec<Vec<Rgb<u8>>> {
+pub fn train_bullet_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![
             B0, B0, B0, B0, B0, BL, BL, BL, BL, BL, BL, B0, B0, B0, B0, B0,
@@ -76,7 +78,7 @@ pub fn train_bullet_pattern() -> Vec<Vec<Rgb<u8>>> {
 // Patterns for letters A-Z and space
 // TODO check if they actually match MTA display fonts
 
-pub fn pattern_for_letter(letter: char) -> Vec<Vec<Rgb<u8>>> {
+pub fn pattern_for_letter(letter: char) -> BulbDisplay {
     match letter {
         ' ' => space_pattern(),
         'A' => letter_a_pattern(),
@@ -109,7 +111,7 @@ pub fn pattern_for_letter(letter: char) -> Vec<Vec<Rgb<u8>>> {
     }
 }
 
-fn space_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn space_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![B0, B0, B0, B0, B0, B0, B0, B0],
         vec![B0, B0, B0, B0, B0, B0, B0, B0],
@@ -131,7 +133,7 @@ fn space_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_a_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_a_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![B0, B0, W1, W1, W1, W1, B0, B0],
         vec![B0, W1, W1, W1, W1, W1, W1, B0],
@@ -153,7 +155,7 @@ fn letter_a_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_b_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_b_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![W1, W1, W1, W1, W1, W1, B0, B0],
         vec![W1, W1, W1, W1, W1, W1, W1, B0],
@@ -175,7 +177,7 @@ fn letter_b_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_c_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_c_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![B0, W1, W1, W1, W1, W1, W1, B0],
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
@@ -197,7 +199,7 @@ fn letter_c_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_d_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_d_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![W1, W1, W1, W1, W1, W1, B0, B0],
         vec![W1, W1, W1, W1, W1, W1, W1, B0],
@@ -219,7 +221,7 @@ fn letter_d_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_e_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_e_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
@@ -241,7 +243,7 @@ fn letter_e_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_f_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_f_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
@@ -263,7 +265,7 @@ fn letter_f_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_g_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_g_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![B0, W1, W1, W1, W1, W1, W1, B0],
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
@@ -285,7 +287,7 @@ fn letter_g_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_h_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_h_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
@@ -307,7 +309,7 @@ fn letter_h_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_i_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_i_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
@@ -329,7 +331,7 @@ fn letter_i_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_j_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_j_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![B0, B0, B0, B0, W1, W1, W1, W1],
         vec![B0, B0, B0, B0, W1, W1, W1, W1],
@@ -351,7 +353,7 @@ fn letter_j_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_k_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_k_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
         vec![W1, W1, B0, B0, B0, W1, W1, W1],
@@ -373,7 +375,7 @@ fn letter_k_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_l_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_l_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![W1, W1, B0, B0, B0, B0, B0, B0],
         vec![W1, W1, B0, B0, B0, B0, B0, B0],
@@ -395,7 +397,7 @@ fn letter_l_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_m_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_m_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
         vec![W1, W1, W1, B0, B0, W1, W1, W1],
@@ -417,7 +419,7 @@ fn letter_m_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_n_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_n_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
         vec![W1, W1, W1, B0, B0, B0, W1, W1],
@@ -439,7 +441,7 @@ fn letter_n_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_o_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_o_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![B0, W1, W1, W1, W1, W1, W1, B0],
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
@@ -461,7 +463,7 @@ fn letter_o_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_p_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_p_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![W1, W1, W1, W1, W1, W1, B0, B0],
         vec![W1, W1, W1, W1, W1, W1, W1, B0],
@@ -483,7 +485,7 @@ fn letter_p_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_q_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_q_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![B0, W1, W1, W1, W1, W1, W1, B0],
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
@@ -505,7 +507,7 @@ fn letter_q_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_r_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_r_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![W1, W1, W1, W1, W1, W1, B0, B0],
         vec![W1, W1, W1, W1, W1, W1, W1, B0],
@@ -527,7 +529,7 @@ fn letter_r_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_s_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_s_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![B0, W1, W1, W1, W1, W1, W1, B0],
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
@@ -549,7 +551,7 @@ fn letter_s_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_t_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_t_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
@@ -571,7 +573,7 @@ fn letter_t_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_u_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_u_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
@@ -593,7 +595,7 @@ fn letter_u_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_v_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_v_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
@@ -615,7 +617,7 @@ fn letter_v_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_w_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_w_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
@@ -637,7 +639,7 @@ fn letter_w_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_x_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_x_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
         vec![W1, W1, W1, B0, B0, W1, W1, W1],
@@ -659,7 +661,7 @@ fn letter_x_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_y_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_y_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
         vec![W1, W1, B0, B0, B0, B0, W1, W1],
@@ -681,7 +683,7 @@ fn letter_y_pattern() -> Vec<Vec<Rgb<u8>>> {
     pattern
 }
 
-fn letter_z_pattern() -> Vec<Vec<Rgb<u8>>> {
+fn letter_z_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
         vec![W1, W1, W1, W1, W1, W1, W1, W1],

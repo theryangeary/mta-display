@@ -46,7 +46,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut frames = vec![];
 
     for msg in &message_parts {
-        let mut bulb_array = vec![vec![Rgb([0, 0, 0]); bulb_cols.into()]; bulb_rows.into()];
+        let mut bulb_array: BulbDisplay = vec![vec![Rgb([0, 0, 0]); bulb_cols.into()]; bulb_rows.into()];
 
         // draw an A train bullet in the left edge of the bulb array
         let train_bullet = pattern::train_bullet_pattern();
