@@ -1,4 +1,13 @@
 use image::Rgb;
+
+pub const LETTER_PATTERN_WIDTH: u16 = 8;
+pub const LETTER_PATTERN_HEIGHT: u16 = 16;
+pub const LETTER_PATTERN_SPACING: u16 = 2;
+pub const LETTER_PATTERN_SLOT_WIDTH: u16 =
+    LETTER_PATTERN_WIDTH + LETTER_PATTERN_SPACING;
+pub const TRAIN_BULLET_PATTERN_WIDTH: u16 = 16;
+pub const TRAIN_BULLET_PATTERN_HEIGHT: u16 = 16;
+
 #[allow(non_snake_case)]
 pub(crate) fn train_bullet_pattern() -> Vec<Vec<Rgb<u8>>> {
     let Bl = Rgb([0, 204, 255]);

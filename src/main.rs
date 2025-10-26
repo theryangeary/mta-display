@@ -4,23 +4,7 @@ use std::{char, fs::File};
 
 mod pattern;
 
-struct BulbDisplay {
-    pub bulbs: Vec<Vec<Rgb<u8>>>,
-}
-
-impl std::ops::Deref for BulbDisplay {
-    type Target = Vec<Vec<Rgb<u8>>>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.bulbs
-    }
-}
-
-impl std::ops::DerefMut for BulbDisplay {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.bulbs
-    }
-}
+// type BulbDisplay = Vec<Vec<Rgb<u8>>>;
 
 struct BulbDisplayConfig {
     num_bulb_rows: u16,
@@ -71,6 +55,11 @@ impl BulbDisplayConfig {
     fn img_height(&self) -> u16 {
         self.img_height
     }
+
+    fn max_chars_per_row(&self) -> u16 {
+        (self.num_bulb_cols - pattern::TRAIN_BULLET_PATTERN_WIDTH)
+            / pattern::LETTER_PATTERN_SLOT_WIDTH
+    }
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -88,12 +77,30 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         bulb_size_ratio,
     );
 
-    let message = "THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG ".to_uppercase();
+    let message = "ANNA DO YOU LIKE MY SILLY GIF GENERATOR".to_uppercase();
+    let mut words = message.split_whitespace().peekable();
+    let mut message_parts = vec![];
+
+    while let Some(_) = words.peek() {
+        let mut message_part = String::new();
+
+        while let Some(next_word) = words.peek() {
+            if message_part.len() + next_word.len() <= config.max_chars_per_row() as usize {
+                message_part.push_str(next_word);
+                message_part.push(' ');
+                words.next();
+            } else {
+                // current message part is full
+                break;
+            }
+        }
+
+        message_parts.push(message_part);
+    }
 
     let mut frames = vec![];
-    let mut message_slice = message.as_str();
 
-    while message_slice.len() > 0 {
+    for msg in &message_parts {
         let mut bulb_array = vec![vec![Rgb([0, 0, 0]); bulb_cols.into()]; bulb_rows.into()];
 
         // draw an A train bullet in the left edge of the bulb array
@@ -105,10 +112,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         // write text into the bulb array
-        let chars_written = write_text(&mut bulb_array, &message_slice)?;
-
-        // update pending text to write to next frame
-        message_slice = &message_slice[chars_written..];
+        write_text(&mut bulb_array, &msg)?;
 
         frames.push(bulb_array);
     }
@@ -194,10 +198,11 @@ fn write_text(
     let num_cols = bulb_array[0].len();
     // todo find actual bullet width
     let bullet_width = 20;
-    let max_chars = (num_cols - bullet_width) / 10;
+    let max_chars = (num_cols - bullet_width) / pattern::LETTER_PATTERN_SLOT_WIDTH as usize;
     // todo split on words when possible
     let left_pad = if message.len() < max_chars {
-        bullet_width + ((max_chars - message.len()) * 10) / 2
+        bullet_width
+            + ((max_chars - message.len()) * pattern::LETTER_PATTERN_SLOT_WIDTH as usize) / 2
     } else {
         bullet_width
     };
@@ -208,7 +213,8 @@ fn write_text(
         for (row_num, row) in char_pattern.iter().enumerate() {
             for (col_num, &rgb) in row.iter().enumerate() {
                 let target_row = row_num;
-                let target_col = left_pad + col_num + (i as usize * 10);
+                let target_col =
+                    left_pad + col_num + (i as usize * pattern::LETTER_PATTERN_SLOT_WIDTH as usize);
                 if target_row >= bulb_array.len() || target_col >= bulb_array[0].len() {
                     break 'CHARS;
                 }
