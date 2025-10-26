@@ -248,8 +248,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         for _ in 0..frame_duration {
             encoder.write_frame(&frame)?;
         }
-        
-
     }
 
     Ok(())
@@ -297,21 +295,28 @@ fn write_text(
     message: &str,
 ) -> Result<usize, Box<dyn std::error::Error>> {
     let mut ret = 0;
-    'CHARS: for (i, c) in message.chars().enumerate() {
-        // todo find actual bullet width
-        let bullet_width = 20;
 
+    let num_cols = bulb_array[0].len();
+    // todo find actual bullet width
+    let bullet_width = 20;
+    let max_chars = (num_cols - bullet_width) / 10;
+    let left_pad = if message.len() < max_chars {
+        bullet_width + ((max_chars - message.len()) * 10) / 2
+    } else {
+        bullet_width
+    };
+
+    'CHARS: for (i, c) in message.chars().enumerate() {
         let char_pattern = match c {
             'T' => letter_t_pattern(),
             'H' => letter_h_pattern(),
             _ => continue,
         };
 
-        // todo bounds checking - too long message causes panic
         for (row_num, row) in char_pattern.iter().enumerate() {
             for (col_num, &rgb) in row.iter().enumerate() {
                 let target_row = row_num;
-                let target_col = bullet_width + col_num + (i as usize * 10);
+                let target_col = left_pad + col_num + (i as usize * 10);
                 if target_row >= bulb_array.len() || target_col >= bulb_array[0].len() {
                     break 'CHARS;
                 }
