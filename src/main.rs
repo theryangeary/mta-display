@@ -1,6 +1,6 @@
 use gif::{Encoder, Frame, Repeat};
 use image::{ImageBuffer, Rgb};
-use std::{char, fs::File};
+use std::fs::File;
 
 mod pattern;
 
