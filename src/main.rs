@@ -3,12 +3,52 @@ use image::{ImageBuffer, Rgb};
 use std::error::Error;
 use std::fs::File;
 
+use std::str::FromStr;
+
+use axum::Json;
+use axum::extract::Path;
+use axum::http::{HeaderMap, HeaderValue, StatusCode, header};
+use axum::response::{IntoResponse, Redirect, Response};
+use axum::{Router, routing::get};
+use maud::{DOCTYPE, PreEscaped};
+use maud::{Markup, html};
+use tokio::signal;
+use tower_http::trace::TraceLayer;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
 mod pattern;
 mod types;
 use types::BulbDisplay;
 use types::BulbDisplayConfig;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Initialize tracing
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
+                "grocery_list_backend=debug,tower_http=debug,axum::rejection=trace".into()
+            }),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+
+
+        let app = Router::new()
+        .route("/", get(get_index))
+        .route("/health", get(health_check))
+        .layer(TraceLayer::new_for_http());
+
+        // Run it on localhost:3000
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+
+    let server =
+        axum::serve(listener, app.into_make_service()).with_graceful_shutdown(shutdown_signal());
+
+    if let Err(e) = server.await {
+        tracing::error!("server error: {}", e);
+    }
+
     // config setup
     let margin = 10;
     let bulb_rows = 16;
@@ -35,6 +75,49 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     write_frames_to_gif_at_path(&config, frames, "output.gif".into())?;
 
     Ok(())
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    tokio::select! {
+        _ = ctrl_c => {
+            tracing::info!("received Ctrl+C signal");
+        }
+        _ = terminate => {
+            tracing::info!("received SIGTERM signal");
+        }
+    }
+
+    tracing::info!("starting graceful shutdown");
+}
+
+async fn get_index() -> Markup {
+    html! {
+        body {
+            h1 { "MTA Sign GIF Generator" }
+            p { "This is a simple web application that generates GIFs that simulate an MTA subway sign." }
+            p { "To generate a GIF, modify the source code and run the application. The output GIF will be saved as output.gif in the current directory." }
+        }
+    }
+}
+
+async fn health_check() -> Json<serde_json::Value> {
+    Json(serde_json::json!({
+        "status": "healthy",
+        "timestamp": chrono::Utc::now().to_rfc3339(),
+    }))
 }
 
 fn write_frames_to_gif_at_path(config: &BulbDisplayConfig, frames: Vec<BulbDisplay>, path: std::path::PathBuf) -> Result<(), Box<dyn Error>> {
