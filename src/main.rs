@@ -10,7 +10,7 @@ use axum::extract::Path;
 use axum::http::{HeaderMap, HeaderValue, header};
 use axum::response::{IntoResponse, Response};
 use axum::{Router, routing::get};
-use maud::{Markup, html};
+use maud::{html, Markup, DOCTYPE};
 use tokio::signal;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -78,6 +78,19 @@ async fn shutdown_signal() {
     tracing::info!("starting graceful shutdown");
 }
 
+fn head(title: &str) -> Markup {
+    html! {
+        head {
+            (DOCTYPE)
+            meta charset="UTF-8" {};
+            meta name="viewport" content="width=device-width, initial-scale=1.0" {};
+            link rel="stylesheet" href="/static/output.css";
+            script src="/static/htmx.min.js" {};
+            title { (title) }
+        }
+    }
+}
+
 async fn get_gif(Path(message): Path<String>) -> Response {
     // config setup
     let margin = 10;
@@ -110,6 +123,7 @@ async fn get_gif(Path(message): Path<String>) -> Response {
 
 async fn get_index() -> Markup {
     html! {
+        (head("MTA Sign GIF Generator"))
         body {
             h1 { "MTA Sign GIF Generator" }
             p { "This is a simple web application that generates GIFs that simulate an MTA subway sign." }
