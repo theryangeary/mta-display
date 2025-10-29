@@ -3,14 +3,13 @@ use image::{ImageBuffer, Rgb};
 use std::error::Error;
 use std::fs::File;
 
-use std::str::FromStr;
+use std::io::Write;
 
 use axum::Json;
 use axum::extract::Path;
-use axum::http::{HeaderMap, HeaderValue, StatusCode, header};
-use axum::response::{IntoResponse, Redirect, Response};
+use axum::http::{HeaderMap, HeaderValue, header};
+use axum::response::{IntoResponse, Response};
 use axum::{Router, routing::get};
-use maud::{DOCTYPE, PreEscaped};
 use maud::{Markup, html};
 use tokio::signal;
 use tower_http::trace::TraceLayer;
@@ -27,7 +26,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-                "grocery_list_backend=debug,tower_http=debug,axum::rejection=trace".into()
+                "debug".into()
             }),
         )
         .with(tracing_subscriber::fmt::layer())
@@ -37,6 +36,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let app = Router::new()
         .route("/", get(get_index))
         .route("/health", get(health_check))
+        .route("/gif/{message}", get(get_gif))
         .layer(TraceLayer::new_for_http());
 
         // Run it on localhost:3000
@@ -48,31 +48,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Err(e) = server.await {
         tracing::error!("server error: {}", e);
     }
-
-    // config setup
-    let margin = 10;
-    let bulb_rows = 16;
-    let bulb_cols = 160;
-    let bulb_bounding_box_size = 8;
-    let bulb_size_ratio = 0.75;
-
-    let config = BulbDisplayConfig::new(
-        bulb_rows,
-        bulb_cols,
-        margin,
-        bulb_bounding_box_size,
-        bulb_size_ratio,
-    );
-
-    let train = types::Train::A;
-
-    let message = "ANNA DO YOU LIKE MY SILLY GIF GENERATOR".to_uppercase();
-
-    let message_parts = split_message_into_parts(&config, message);
-
-    let frames = generate_frames_for_message(&config, train, message_parts)?;
-
-    write_frames_to_gif_at_path(&config, frames, "output.gif".into())?;
 
     Ok(())
 }
@@ -103,12 +78,42 @@ async fn shutdown_signal() {
     tracing::info!("starting graceful shutdown");
 }
 
+async fn get_gif(Path(message): Path<String>) -> Response {
+    // config setup
+    let margin = 10;
+    let bulb_rows = 16;
+    let bulb_cols = 160;
+    let bulb_bounding_box_size = 8;
+    let bulb_size_ratio = 0.75;
+
+    let config = BulbDisplayConfig::new(
+        bulb_rows,
+        bulb_cols,
+        margin,
+        bulb_bounding_box_size,
+        bulb_size_ratio,
+    );
+
+    let train = types::Train::A;
+
+    let message_parts = split_message_into_parts(&config, &message.to_ascii_uppercase());
+
+    let frames = generate_frames_for_message(&config, train, message_parts).unwrap();
+
+    let gif_data = write_frames_to_gif_in_memory(&config, &frames).unwrap();
+
+    let mut headers = HeaderMap::new();
+    headers.insert(header::CONTENT_TYPE, HeaderValue::from_static("image/gif"));
+
+    (headers, gif_data).into_response()
+}
+
 async fn get_index() -> Markup {
     html! {
         body {
             h1 { "MTA Sign GIF Generator" }
             p { "This is a simple web application that generates GIFs that simulate an MTA subway sign." }
-            p { "To generate a GIF, modify the source code and run the application. The output GIF will be saved as output.gif in the current directory." }
+            img src="/gif/Welcome to the A train line! Enjoy your ride." alt="Sample MTA Sign GIF";
         }
     }
 }
@@ -120,10 +125,20 @@ async fn health_check() -> Json<serde_json::Value> {
     }))
 }
 
-fn write_frames_to_gif_at_path(config: &BulbDisplayConfig, frames: Vec<BulbDisplay>, path: std::path::PathBuf) -> Result<(), Box<dyn Error>> {
+fn write_frames_to_gif_at_path(config: &BulbDisplayConfig, frames: &Vec<BulbDisplay>, path: std::path::PathBuf) -> Result<(), Box<dyn Error>> {
     let mut image_file = File::create(path)?;
+    write_frames_to_gif(config, frames, &mut image_file)
+}
+
+fn write_frames_to_gif_in_memory(config: &BulbDisplayConfig, frames: &Vec<BulbDisplay>) -> Result<Vec<u8>, Box<dyn Error>> {
+    let mut buffer: Vec<u8> = vec![];
+    write_frames_to_gif(config, frames, &mut buffer)?;
+    Ok(buffer)
+}
+
+fn write_frames_to_gif(config: &BulbDisplayConfig, frames: &Vec<BulbDisplay>, output_gif: &mut dyn Write) -> Result<(), Box<dyn Error>> {
     let mut encoder = Encoder::new(
-        &mut image_file,
+         output_gif,
         config.img_width(),
         config.img_height(),
         &[],
@@ -172,7 +187,7 @@ fn generate_frames_for_message(config: &BulbDisplayConfig, train: types::Train, 
     Ok(frames)
 }
 
-fn split_message_into_parts(config: &BulbDisplayConfig, message: String) -> Vec<String> {
+fn split_message_into_parts(config: &BulbDisplayConfig, message: &str) -> Vec<String> {
     let mut message_parts = vec![];
 
     let mut words = message.split_whitespace().peekable();
