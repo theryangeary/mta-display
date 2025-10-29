@@ -53,7 +53,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let margin = 10;
     let bulb_rows = 16;
     let bulb_cols = 160;
-    let bulb_bounding_box_size = 20;
+    let bulb_bounding_box_size = 8;
     let bulb_size_ratio = 0.75;
 
     let config = BulbDisplayConfig::new(
@@ -142,7 +142,7 @@ fn write_frames_to_gif_at_path(config: &BulbDisplayConfig, frames: Vec<BulbDispl
         }
 
         // Add frame to GIF
-        let frame = Frame::from_rgb(config.img_width(), config.img_height(), &img.into_raw());
+        let frame = Frame::from_rgb_speed(config.img_width(), config.img_height(), &img.into_raw(), 30);
 
         let frame_duration = 10;
         for _ in 0..frame_duration {
