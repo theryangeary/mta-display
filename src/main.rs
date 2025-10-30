@@ -463,6 +463,8 @@ fn write_text(
         bullet_width
     };
 
+    let mut next_char_start_column = left_pad;
+
     'CHARS: for (i, c) in message.chars().enumerate() {
         let char_pattern = pattern::pattern_for_letter(c);
 
@@ -470,13 +472,15 @@ fn write_text(
             for (col_num, &rgb) in row.iter().enumerate() {
                 let target_row = row_num;
                 let target_col =
-                    left_pad + col_num + (i as usize * pattern::LETTER_PATTERN_SLOT_WIDTH as usize);
+                    next_char_start_column + col_num;
                 if target_row >= bulb_array.len() || target_col >= bulb_array[0].len() {
                     break 'CHARS;
                 }
                 bulb_array[target_row][target_col] = rgb;
-            }
+            }    
         }
+
+        next_char_start_column += char_pattern[0].len() + pattern::LETTER_PATTERN_SPACING as usize;
 
         ret += 1;
     }
