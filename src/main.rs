@@ -1,16 +1,20 @@
+use axum::routing::post;
 use gif::{Encoder, Frame, Repeat};
 use image::{ImageBuffer, Rgb};
+use rust_embed::Embed;
+use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
 
 use std::io::Write;
 
-use axum::Json;
-use axum::extract::Path;
-use axum::http::{HeaderMap, HeaderValue, header};
+use axum::{Form, Json};
+use axum::extract::{Path, Query};
+use axum::http::{header, HeaderMap, HeaderValue, StatusCode};
 use axum::response::{IntoResponse, Response};
 use axum::{Router, routing::get};
 use maud::{html, Markup, DOCTYPE};
+use serde::Deserialize;
 use tokio::signal;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
@@ -34,9 +38,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 
         let app = Router::new()
-        .route("/", get(get_index))
+        .route("/", get(get_index_markup))
         .route("/health", get(health_check))
-        .route("/gif/{message}", get(get_gif))
+        .route("/static/{file}", get(get_static_file))
+        .route("/generate", post(post_generate))
+        .route("/gif/{message}", get(get_gif_file))
         .layer(TraceLayer::new_for_http());
 
         // Run it on localhost:3000
@@ -78,6 +84,40 @@ async fn shutdown_signal() {
     tracing::info!("starting graceful shutdown");
 }
 
+#[derive(Embed)]
+#[folder = "$OUT_DIR/static"]
+struct Assets;
+
+async fn get_static_file(Path(path): Path<String>) -> impl IntoResponse {
+    tracing::info!("static");
+    match Assets::get(&path) {
+        Some(content) => {
+            let mime = mime_guess::from_path(path).first_or_octet_stream();
+
+            ([(header::CONTENT_TYPE, mime.as_ref())], content.data).into_response()
+        }
+        None => {
+            println!(
+                "{} not found in {:?}",
+                path,
+                Assets::iter().collect::<Vec<_>>()
+            );
+            not_found().await
+        }
+    }
+}
+
+async fn not_found() -> Response {
+    (StatusCode::NOT_FOUND, "404").into_response()
+}
+
+async fn health_check() -> Json<serde_json::Value> {
+    Json(serde_json::json!({
+        "status": "healthy",
+        "timestamp": chrono::Utc::now().to_rfc3339(),
+    }))
+}
+
 fn head(title: &str) -> Markup {
     html! {
         head {
@@ -91,12 +131,28 @@ fn head(title: &str) -> Markup {
     }
 }
 
-async fn get_gif(Path(message): Path<String>) -> Response {
+#[derive(Deserialize)]
+struct GenerateGifForm {
+    message: String,
+}
+
+/// Handle form submission to generate a new GIF, returning the updated markup to replace the existing image.
+async fn post_generate(Form(generate_gif_form): Form<GenerateGifForm>) -> Markup {
+    (gif_markup(&generate_gif_form.message))
+}
+
+fn gif_markup(message: &str) -> Markup {
+    html! {
+        img id="mta-sign-gif" src=(&format!("/gif/{}", message)) alt=(&format!("Generated MTA Sign GIF with message {}", message));
+    }
+}
+
+async fn get_gif_file(Path(message): Path<String>) -> Response {
     // config setup
     let margin = 10;
     let bulb_rows = 16;
     let bulb_cols = 160;
-    let bulb_bounding_box_size = 8;
+    let bulb_bounding_box_size = 4;
     let bulb_size_ratio = 0.75;
 
     let config = BulbDisplayConfig::new(
@@ -121,22 +177,22 @@ async fn get_gif(Path(message): Path<String>) -> Response {
     (headers, gif_data).into_response()
 }
 
-async fn get_index() -> Markup {
+async fn get_index_markup(Query(message): Query<HashMap<String, String>>) -> Markup {
+    tracing::info!("Received request for index page with message: {:?}", message);
+    let message = message.get("message").cloned().unwrap_or_else(|| "Welcome to the A train line! Enjoy your ride.".into());
     html! {
         (head("MTA Sign GIF Generator"))
         body {
             h1 { "MTA Sign GIF Generator" }
             p { "This is a simple web application that generates GIFs that simulate an MTA subway sign." }
-            img src="/gif/Welcome to the A train line! Enjoy your ride." alt="Sample MTA Sign GIF";
+            (gif_markup(&message))
+            form hx-post="/generate" hx-target="#mta-sign-gif" hx-swap="outerHTML" {
+                label for="message" { "Message: " }
+                input type="text" name="message" id="message" value=(&format!("{}", message));
+                button type="submit" { "Generate GIF" }
+            }
         }
     }
-}
-
-async fn health_check() -> Json<serde_json::Value> {
-    Json(serde_json::json!({
-        "status": "healthy",
-        "timestamp": chrono::Utc::now().to_rfc3339(),
-    }))
 }
 
 fn write_frames_to_gif_at_path(config: &BulbDisplayConfig, frames: &Vec<BulbDisplay>, path: std::path::PathBuf) -> Result<(), Box<dyn Error>> {
