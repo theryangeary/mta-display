@@ -11,7 +11,6 @@ pub const TRAIN_BULLET_PATTERN_WIDTH: u16 = 16;
 #[allow(dead_code)]
 pub const TRAIN_BULLET_PATTERN_HEIGHT: u16 = 16;
 
-
 // short names for colors used in patterns, makes patterns easier to read as they becomes somewhat 1:1 aspect ratio
 /// White
 const W1: Rgb<u8> = Rgb([255, 255, 255]);
@@ -81,6 +80,7 @@ pub fn pattern_for_train(train: Train) -> BulbDisplay {
 pub fn pattern_for_letter(letter: char) -> BulbDisplay {
     match letter {
         ' ' => space_pattern(),
+        ':' => colon_pattern(),
         'A' => letter_a_pattern(),
         'B' => letter_b_pattern(),
         'C' => letter_c_pattern(),
@@ -107,6 +107,16 @@ pub fn pattern_for_letter(letter: char) -> BulbDisplay {
         'X' => letter_x_pattern(),
         'Y' => letter_y_pattern(),
         'Z' => letter_z_pattern(),
+        '1' => number_one_pattern(),
+        '2' => number_two_pattern(),
+        '3' => number_three_pattern(),
+        '4' => number_four_pattern(),
+        '5' => number_five_pattern(),
+        '6' => number_six_pattern(),
+        '7' => number_seven_pattern(),
+        '8' => number_eight_pattern(),
+        '9' => number_nine_pattern(),
+        '0' => number_zero_pattern(),
         _ => space_pattern(),
     }
 }
@@ -701,6 +711,248 @@ fn letter_z_pattern() -> BulbDisplay {
         vec![W1, W1, B0, B0, B0, B0, B0, B0],
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
         vec![W1, W1, W1, W1, W1, W1, W1, W1],
+    ];
+    pattern
+}
+
+fn number_one_pattern() -> BulbDisplay {
+    let pattern = vec![
+        vec![B0, B0, W1, W1],
+        vec![B0, W1, W1, W1],
+        vec![W1, W1, W1, W1],
+        vec![W1, W1, W1, W1],
+        vec![B0, B0, W1, W1],
+        vec![B0, B0, W1, W1],
+        vec![B0, B0, W1, W1],
+        vec![B0, B0, W1, W1],
+        vec![B0, B0, W1, W1],
+        vec![B0, B0, W1, W1],
+        vec![B0, B0, W1, W1],
+        vec![B0, B0, W1, W1],
+        vec![B0, B0, W1, W1],
+        vec![B0, B0, W1, W1],
+        vec![B0, B0, W1, W1],
+        vec![B0, B0, W1, W1],
+    ];
+    pattern
+}
+
+fn number_two_pattern() -> BulbDisplay {
+    let pattern = vec![
+        vec![B0, W1, W1, W1, W1, W1, W1, B0],
+        vec![W1, W1, W1, W1, W1, W1, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![B0, B0, B0, B0, B0, B0, W1, W1],
+        vec![B0, B0, B0, B0, B0, W1, W1, W1],
+        vec![B0, B0, B0, B0, W1, W1, W1, B0],
+        vec![B0, B0, B0, W1, W1, W1, B0, B0],
+        vec![B0, B0, W1, W1, W1, B0, B0, B0],
+        vec![B0, W1, W1, B0, B0, B0, B0, B0],
+        vec![W1, W1, B0, B0, B0, B0, B0, B0],
+        vec![W1, W1, B0, B0, B0, B0, B0, B0],
+        vec![W1, W1, B0, B0, B0, B0, B0, B0],
+        vec![W1, W1, B0, B0, B0, B0, B0, B0],
+        vec![W1, W1, W1, W1, W1, W1, W1, W1],
+        vec![B0, W1, W1, W1, W1, W1, W1, B0],
+    ];
+    pattern
+}
+
+fn number_three_pattern() -> BulbDisplay {
+    let pattern = vec![
+        vec![B0, W1, W1, W1, W1, W1, W1, B0],
+        vec![W1, W1, W1, W1, W1, W1, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![B0, B0, B0, B0, B0, B0, W1, W1],
+        vec![B0, B0, B0, B0, B0, B0, W1, W1],
+        vec![B0, B0, B0, B0, W1, W1, W1, B0],
+        vec![B0, B0, B0, W1, W1, W1, B0, B0],
+        vec![B0, B0, B0, B0, W1, W1, W1, B0],
+        vec![B0, B0, B0, B0, B0, B0, W1, W1],
+        vec![B0, B0, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, W1, W1, W1, W1, W1, W1],
+        vec![B0, W1, W1, W1, W1, W1, W1, B0],
+    ];
+    pattern
+}
+
+fn number_four_pattern() -> BulbDisplay {
+    let pattern = vec![
+        vec![B0, B0, B0, B0, B0, W1, W1, B0],
+        vec![B0, B0, B0, B0, W1, W1, W1, B0],
+        vec![B0, B0, B0, W1, W1, W1, W1, B0],
+        vec![B0, B0, W1, W1, B0, W1, W1, B0],
+        vec![B0, W1, W1, B0, B0, W1, W1, B0],
+        vec![W1, W1, B0, B0, B0, W1, W1, B0],
+        vec![W1, W1, B0, B0, B0, W1, W1, B0],
+        vec![W1, W1, B0, B0, B0, W1, W1, B0],
+        vec![W1, W1, W1, W1, W1, W1, W1, W1],
+        vec![W1, W1, W1, W1, W1, W1, W1, W1],
+        vec![B0, B0, B0, B0, B0, W1, W1, B0],
+        vec![B0, B0, B0, B0, B0, W1, W1, B0],
+        vec![B0, B0, B0, B0, B0, W1, W1, B0],
+        vec![B0, B0, B0, B0, B0, W1, W1, B0],
+        vec![B0, B0, B0, B0, B0, W1, W1, B0],
+        vec![B0, B0, B0, B0, B0, W1, W1, B0],
+    ];
+    pattern
+}
+
+fn number_five_pattern() -> BulbDisplay {
+    let pattern = vec![
+        vec![W1, W1, W1, W1, W1, W1, W1, W1],
+        vec![W1, W1, W1, W1, W1, W1, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, B0, B0],
+        vec![W1, W1, B0, B0, B0, B0, B0, B0],
+        vec![W1, W1, B0, B0, B0, B0, B0, B0],
+        vec![W1, W1, B0, B0, B0, B0, B0, B0],
+        vec![W1, W1, B0, B0, B0, B0, B0, B0],
+        vec![W1, W1, W1, W1, W1, W1, W1, B0],
+        vec![B0, W1, W1, W1, W1, W1, W1, B0],
+        vec![B0, B0, B0, B0, B0, B0, W1, W1],
+        vec![B0, B0, B0, B0, B0, B0, W1, W1],
+        vec![B0, B0, B0, B0, B0, B0, W1, W1],
+        vec![B0, B0, B0, B0, B0, B0, W1, W1],
+        vec![B0, B0, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, W1, W1, W1, W1, W1, W1],
+        vec![B0, W1, W1, W1, W1, W1, W1, B0],
+    ];
+    pattern
+}
+
+fn number_six_pattern() -> BulbDisplay {
+    let pattern = vec![
+        vec![B0, W1, W1, W1, W1, W1, W1, B0],
+        vec![W1, W1, W1, W1, W1, W1, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, B0, B0],
+        vec![W1, W1, B0, B0, B0, B0, B0, B0],
+        vec![W1, W1, B0, B0, B0, B0, B0, B0],
+        vec![W1, W1, W1, W1, W1, W1, W1, B0],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, W1, W1, W1, W1, W1, W1],
+        vec![B0, W1, W1, W1, W1, W1, W1, B0],
+    ];
+    pattern
+}
+
+fn number_seven_pattern() -> BulbDisplay {
+    let pattern = vec![
+        vec![W1, W1, W1, W1, W1, W1, W1, W1],
+        vec![W1, W1, W1, W1, W1, W1, W1, W1],
+        vec![B0, B0, B0, B0, B0, B0, W1, W1],
+        vec![B0, B0, B0, B0, B0, W1, W1, W1],
+        vec![B0, B0, B0, B0, W1, W1, W1, B0],
+        vec![B0, B0, B0, W1, W1, W1, B0, B0],
+        vec![B0, B0, W1, W1, W1, B0, B0, B0],
+        vec![B0, W1, W1, B0, B0, B0, B0, B0],
+        vec![W1, W1, B0, B0, B0, B0, B0, B0],
+        vec![W1, W1, B0, B0, B0, B0, B0, B0],
+        vec![W1, W1, B0, B0, B0, B0, B0, B0],
+        vec![W1, W1, B0, B0, B0, B0, B0, B0],
+        vec![W1, W1, B0, B0, B0, B0, B0, B0],
+        vec![W1, W1, B0, B0, B0, B0, B0, B0],
+        vec![W1, W1, B0, B0, B0, B0, B0, B0],
+        vec![W1, W1, B0, B0, B0, B0, B0, B0],
+    ];
+    pattern
+}
+
+fn number_eight_pattern() -> BulbDisplay {
+    let pattern = vec![
+        vec![B0, W1, W1, W1, W1, W1, W1, B0],
+        vec![W1, W1, W1, W1, W1, W1, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, W1, W1, W1, W1, W1, B0],
+        vec![B0, W1, W1, W1, W1, W1, W1, B0],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, W1, W1, W1, W1, W1, W1],
+        vec![B0, W1, W1, W1, W1, W1, W1, B0],
+    ];
+    pattern
+}
+
+fn number_nine_pattern() -> BulbDisplay {
+    let pattern = vec![
+        vec![B0, B0, W1, W1, W1, W1, B0, B0],
+        vec![B0, W1, W1, W1, W1, W1, W1, B0],
+        vec![W1, W1, W1, B0, B0, W1, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, W1, B0, B0, B0, W1, W1],
+        vec![B0, W1, W1, W1, W1, W1, W1, W1],
+        vec![B0, B0, W1, W1, W1, W1, W1, W1],
+        vec![B0, B0, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, W1, B0, B0, B0, W1, W1],
+        vec![B0, W1, W1, W1, W1, W1, W1, B0],
+        vec![B0, B0, W1, W1, W1, W1, B0, B0],
+    ];
+    pattern
+}
+
+fn number_zero_pattern() -> BulbDisplay {
+    let pattern = vec![
+        vec![B0, W1, W1, W1, W1, W1, W1, B0],
+        vec![W1, W1, W1, W1, W1, W1, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, W1, W1, W1],
+        vec![W1, W1, B0, B0, W1, W1, W1, W1],
+        vec![W1, W1, B0, W1, W1, B0, W1, W1],
+        vec![W1, W1, W1, W1, B0, B0, W1, W1],
+        vec![W1, W1, W1, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, B0, B0, B0, B0, W1, W1],
+        vec![W1, W1, W1, W1, W1, W1, W1, W1],
+        vec![B0, W1, W1, W1, W1, W1, W1, B0],
+    ];
+    pattern
+}
+
+fn colon_pattern() -> BulbDisplay {
+    let pattern = vec![
+        vec![B0, B0],
+        vec![B0, B0],
+        vec![B0, B0],
+        vec![B0, B0],
+        vec![B0, B0],
+        vec![W1, W1],
+        vec![W1, W1],
+        vec![B0, B0],
+        vec![B0, B0],
+        vec![B0, B0],
+        vec![W1, W1],
+        vec![W1, W1],
+        vec![B0, B0],
+        vec![B0, B0],
+        vec![B0, B0],
+        vec![B0, B0],
     ];
     pattern
 }
