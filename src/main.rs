@@ -141,10 +141,12 @@ struct GenerateGifForm {
 async fn post_generate(
     Form(generate_gif_form): Form<GenerateGifForm>,
 ) -> Result<Response, StatusCode> {
-        let url = HeaderValue::from_str(&format!("/?message={}", &generate_gif_form.message)).map_err(|e| {
-        tracing::error!("failed to turn message param into push-url: {}", e);
-        StatusCode::INTERNAL_SERVER_ERROR
-    })?;
+    let url = HeaderValue::from_str(&format!("/?message={}", &generate_gif_form.message)).map_err(
+        |e| {
+            tracing::error!("failed to turn message param into push-url: {}", e);
+            StatusCode::INTERNAL_SERVER_ERROR
+        },
+    )?;
 
     let mut headers = HeaderMap::new();
     headers.insert(header::CONTENT_TYPE, HeaderValue::from_static("text/html"));
@@ -160,9 +162,9 @@ fn gif_markup(message: &str) -> Markup {
             justify-center
             mb-8
         " {
-            img 
-                id="mta-sign-gif" 
-                src=(&format!("/gif/sm/{}", message)) 
+            img
+                id="mta-sign-gif"
+                src=(&format!("/gif/sm/{}", message))
                 alt=(&format!("Generated MTA Display with message {}", message))
                 class="h-auto max-w-full"
             ;
@@ -205,7 +207,7 @@ async fn get_index_markup(Query(message): Query<HashMap<String, String>>) -> Mar
         (head("MTA Display Generator"))
         body {
             div class="flex justify-center" {
-                div 
+                div
                     class="
                     grid content-center
                     max-w-lg
@@ -226,18 +228,43 @@ async fn get_index_markup(Query(message): Query<HashMap<String, String>>) -> Mar
                             mb-4
                         "
                     {
-                        label class="text-gray-200 flex w-100% block mb-2" for="message" { 
+                        label class="text-gray-200 flex w-100% block mb-2" for="message" {
                             span class="flex-grow" { "Message: " }
                             span class="flex-shrink relative group" {
-                                span class="text-gray-500 cursor-pointer" { "ⓘ" }
-                                span class="absolute hidden group-hover:block bg-gray-300 text-black text-xs rounded py-1 px-2 -left-50 top-full mb-1" {
+                                button type="button" class="
+                                    text-gray-500 
+                                    cursor-pointer
+                                    focus:outline-none
+                                    " 
+                                    onclick="this.nextElementSibling.classList.toggle('hidden')"
+                                {
+                                    "ⓘ"
+                                }
+
+                                span class="
+                                    absolute 
+                                    hidden 
+                                    group-hover:block 
+                                    bg-gray-300 
+                                    text-black 
+                                    text-xs 
+                                    rounded 
+                                    py-1 
+                                    px-2  
+                                    -left-50 
+                                    top-full 
+                                    mb-1
+                                    z-10 
+                                    whitespace-nowrap
+                                    " 
+                                {
                                     p class="mb-1" {"Max 6 rows, 14 characters per row. "}
                                     p class="mb-1" {"Use linebreaks to separate pages manually. "}
                                     p class="mb-1" {"Unsupported characters will be ignored." }
                                 }
                             }
                         }
-                        textarea 
+                        textarea
                             class="
                                 w-full
                                 p-2
@@ -250,14 +277,23 @@ async fn get_index_markup(Query(message): Query<HashMap<String, String>>) -> Mar
                                 text-black
                                 focus:outline-none
                                 focus:border-blue-500"
-                            name="message" 
-                            id="message" 
+                            name="message"
+                            id="message"
                             rows="4"
                             placeholder="Type your message here..." {
                                 (message)
                             }
                         br;
-                        button type="submit" { "Generate" }
+                        button type="submit" class="
+                            bg-yellow-500 
+                            text-black 
+                            font-bold
+                            py-2 
+                            px-4 
+                            rounded 
+                            hover:bg-yellow-600
+                        "
+                        { "Generate" }
                     }
 
                     h2 { "About"}
