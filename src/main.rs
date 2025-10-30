@@ -226,19 +226,19 @@ async fn get_index_markup(Query(params): Query<HashMap<String, String>>) -> Mark
                         hx-post="/generate"
                         hx-target="#mta-sign-gif"
                         hx-swap="outerHTML"
-                        class=" bg-gray-800 border-gray-700 p-4 rounded-xl mb-4 "
+                        class="bg-gray-200 border-gray-300 p-4 rounded-xl mb-4"
                     {
-                        label class="text-gray-200 flex w-100% block mb-2" for="message" {
+                        label class="flex w-100% block mb-2" for="message" {
                             span class="flex-grow" { "Message: " }
                             span class="flex-shrink relative group" {
                                 button type="button"
-                                    class=" text-gray-500 cursor-pointer focus:outline-none "
+                                    class="cursor-pointer focus:outline-none "
                                     onclick="this.nextElementSibling.classList.toggle('hidden')"
                                 {
                                     "ⓘ"
                                 }
 
-                                span class=" absolute hidden group-hover:block bg-gray-300 text-black text-xs rounded py-1 px-2 -left-50 top-full mb-1 z-10 whitespace-nowrap " {
+                                span class=" absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 -left-50 top-full mb-1 z-10 whitespace-nowrap " {
                                     p class="mb-1" {"Max 6 rows, 14 characters per row. "}
                                     p class="mb-1" {"Use linebreaks to separate pages manually. "}
                                     p class="mb-1" {"Unsupported characters will be ignored." }
@@ -255,7 +255,7 @@ async fn get_index_markup(Query(params): Query<HashMap<String, String>>) -> Mark
                             }
                         br;
 
-                        label class="text-gray-200 flex w-100% block mb-2" for="train" {
+                        label class=" flex w-100% block mb-2" for="train" {
                             span class="flex-grow" { "Train: " }
                             select
                                 name="train"
