@@ -925,7 +925,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mta-sign"
+name = "mta-display"
 version = "0.1.0"
 dependencies = [
  "axum",
