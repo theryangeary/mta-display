@@ -25,7 +25,7 @@ mod types;
 use types::BulbDisplay;
 use types::BulbDisplayConfig;
 
-use crate::types::BulbDisplaySize;
+use crate::types::{BulbDisplaySize, Train};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -43,7 +43,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/health", get(health_check))
         .route("/static/{file}", get(get_static_file))
         .route("/generate", post(post_generate))
-        .route("/gif/{size}/{message}", get(get_gif_file))
+        .route("/gif/{size}/{train}/{message}", get(get_gif_file))
         .layer(TraceLayer::new_for_http());
 
     // Run it on localhost:3000
@@ -135,36 +135,40 @@ fn head(title: &str) -> Markup {
 #[derive(Deserialize)]
 struct GenerateGifForm {
     message: String,
+    train: Train,
 }
 
 /// Handle form submission to generate a new GIF, returning the updated markup to replace the existing image.
 async fn post_generate(
     Form(generate_gif_form): Form<GenerateGifForm>,
 ) -> Result<Response, StatusCode> {
-    let url = HeaderValue::from_str(&format!("/?message={}", &generate_gif_form.message)).map_err(
-        |e| {
-            tracing::error!("failed to turn message param into push-url: {}", e);
-            StatusCode::INTERNAL_SERVER_ERROR
-        },
-    )?;
+    let url = HeaderValue::from_str(&format!(
+        "/?message={}&train={}",
+        &generate_gif_form.message, &generate_gif_form.train
+    ))
+    .map_err(|e| {
+        tracing::error!("failed to turn message param into push-url: {}", e);
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
 
     let mut headers = HeaderMap::new();
     headers.insert(header::CONTENT_TYPE, HeaderValue::from_static("text/html"));
     headers.insert("hx-push-url", url);
 
-    Ok((headers, gif_markup(&generate_gif_form.message)).into_response())
+    Ok((
+        headers,
+        gif_markup(generate_gif_form.train, &generate_gif_form.message),
+    )
+        .into_response())
 }
 
-fn gif_markup(message: &str) -> Markup {
+fn gif_markup(train: Train, message: &str) -> Markup {
     html! {
-        div class="
-            flex
-            justify-center
-            mb-8
-        " {
+        div id="mta-sign-gif"
+            class=" flex justify-center mb-8 "
+        {
             img
-                id="mta-sign-gif"
-                src=(&format!("/gif/sm/{}", message))
+                src=(&format!("/gif/sm/{}/{}", train, message))
                 alt=(&format!("Generated MTA Display with message {}", message))
                 class="h-auto max-w-full"
             ;
@@ -172,7 +176,7 @@ fn gif_markup(message: &str) -> Markup {
     }
 }
 
-async fn get_gif_file(Path((size, message)): Path<(String, String)>) -> Response {
+async fn get_gif_file(Path((size, train, message)): Path<(String, Train, String)>) -> Response {
     let bulb_display_size = match BulbDisplaySize::from_str(&size) {
         Ok(s) => s,
         Err(e) => {
@@ -182,8 +186,6 @@ async fn get_gif_file(Path((size, message)): Path<(String, String)>) -> Response
         }
     };
     let config = BulbDisplayConfig::new_from_size(bulb_display_size);
-
-    let train = types::Train::A;
 
     let uppercase_message = message.to_ascii_uppercase();
     let message_parts = split_message_into_parts(&config, &uppercase_message);
@@ -198,11 +200,15 @@ async fn get_gif_file(Path((size, message)): Path<(String, String)>) -> Response
     (headers, gif_data).into_response()
 }
 
-async fn get_index_markup(Query(message): Query<HashMap<String, String>>) -> Markup {
-    let message = message
+async fn get_index_markup(Query(params): Query<HashMap<String, String>>) -> Markup {
+    let message = params
         .get("message")
         .cloned()
         .unwrap_or_else(|| "Welcome to the MTA display generator".into());
+
+    let train = Train::from_str(&params.get("train").cloned().unwrap_or_else(|| "A".into()))
+        .unwrap_or(Train::A);
+
     html! {
         (head("MTA Display Generator"))
         body {
@@ -215,49 +221,24 @@ async fn get_index_markup(Query(message): Query<HashMap<String, String>>) -> Mar
                     "
                 {
                     h1 { a href="/" { "MTA Display Generator" } }
-                    (gif_markup(&message))
+                    (gif_markup(train, &message))
                     form
                         hx-post="/generate"
                         hx-target="#mta-sign-gif"
                         hx-swap="outerHTML"
-                        class="
-                            bg-gray-800
-                            border-gray-700
-                            p-4
-                            rounded-xl
-                            mb-4
-                        "
+                        class=" bg-gray-800 border-gray-700 p-4 rounded-xl mb-4 "
                     {
                         label class="text-gray-200 flex w-100% block mb-2" for="message" {
                             span class="flex-grow" { "Message: " }
                             span class="flex-shrink relative group" {
-                                button type="button" class="
-                                    text-gray-500 
-                                    cursor-pointer
-                                    focus:outline-none
-                                    " 
+                                button type="button"
+                                    class=" text-gray-500 cursor-pointer focus:outline-none "
                                     onclick="this.nextElementSibling.classList.toggle('hidden')"
                                 {
                                     "ⓘ"
                                 }
 
-                                span class="
-                                    absolute 
-                                    hidden 
-                                    group-hover:block 
-                                    bg-gray-300 
-                                    text-black 
-                                    text-xs 
-                                    rounded 
-                                    py-1 
-                                    px-2  
-                                    -left-50 
-                                    top-full 
-                                    mb-1
-                                    z-10 
-                                    whitespace-nowrap
-                                    " 
-                                {
+                                span class=" absolute hidden group-hover:block bg-gray-300 text-black text-xs rounded py-1 px-2 -left-50 top-full mb-1 z-10 whitespace-nowrap " {
                                     p class="mb-1" {"Max 6 rows, 14 characters per row. "}
                                     p class="mb-1" {"Use linebreaks to separate pages manually. "}
                                     p class="mb-1" {"Unsupported characters will be ignored." }
@@ -265,18 +246,7 @@ async fn get_index_markup(Query(message): Query<HashMap<String, String>>) -> Mar
                             }
                         }
                         textarea
-                            class="
-                                w-full
-                                p-2
-                                mt-2
-                                mb-4
-                                bg-white
-                                border
-                                border-gray-600
-                                rounded-lg
-                                text-black
-                                focus:outline-none
-                                focus:border-blue-500"
+                            class=" w-full p-2 mt-2 mb-4 bg-white border border-gray-600 rounded-lg text-black focus:outline-none focus:border-blue-500"
                             name="message"
                             id="message"
                             rows="4"
@@ -284,16 +254,34 @@ async fn get_index_markup(Query(message): Query<HashMap<String, String>>) -> Mar
                                 (message)
                             }
                         br;
-                        button type="submit" class="
-                            bg-yellow-500 
-                            text-black 
-                            font-bold
-                            py-2 
-                            px-4 
-                            rounded 
-                            hover:bg-yellow-600
-                        "
-                        { "Generate" }
+
+                        label class="text-gray-200 flex w-100% block mb-2" for="train" {
+                            span class="flex-grow" { "Train: " }
+                            select
+                                name="train"
+                                id="train"
+                                class=" ml-2 p-2 bg-white border border-gray-600 rounded-lg text-black focus:outline-none focus:border-blue-500 "
+                            {
+                                option value="One" { "1" }
+                                option value="A" { "A" }
+                                option value="B" { "B" }
+                                option value="C" { "C" }
+                                option value="D" { "D" }
+                                option value="E" { "E" }
+                                option value="F" { "F" }
+                                option value="G" { "G" }
+                                option value="J" { "J" }
+                                option value="L" { "L" }
+                                option value="M" { "M" }
+                                option value="N" { "N" }
+                                option value="Q" { "Q" }
+                                option value="R" { "R" }
+                                option value="S" { "S" }
+                                option value="Z" { "Z" }
+                            }
+                        }
+
+                        button type="submit" class=" bg-yellow-500 text-black font-bold py-2 px-4 rounded hover:bg-yellow-600 " { "Generate" }
                     }
 
                     h2 { "About"}

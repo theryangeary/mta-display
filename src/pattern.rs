@@ -19,8 +19,59 @@ const W1: Rgb<u8> = Rgb([255, 255, 255]);
 const B0: Rgb<u8> = Rgb([0, 0, 0]);
 /// ACE blue
 const BL: Rgb<u8> = Rgb([0, 204, 255]);
+/// 123 red
+const RD: Rgb<u8> = Rgb([255, 0, 0]);
 
 pub fn pattern_for_train(train: Train) -> BulbDisplay {
+    match train {
+        Train::One => one_train_bullet_pattern(),
+        Train::Two => todo!(),
+        Train::Three => todo!(),
+        Train::Four => todo!(),
+        Train::Five => todo!(),
+        Train::Six => todo!(),
+        Train::Seven => todo!(),
+        Train::A => a_train_bullet_pattern(),
+        Train::B => todo!(),
+        Train::C => todo!(),
+        Train::D => todo!(),
+        Train::E => todo!(),
+        Train::F => todo!(),
+        Train::G => todo!(),
+        Train::J => todo!(),
+        Train::L => todo!(),
+        Train::M => todo!(),
+        Train::N => todo!(),
+        Train::Q => todo!(),
+        Train::R => todo!(),
+        Train::S => todo!(),
+        Train::Z => todo!(),
+    }
+}
+
+fn one_train_bullet_pattern() -> BulbDisplay {
+    let pattern = vec![
+        vec![ B0, B0, B0, B0, B0, RD, RD, W1, W1, RD, RD, B0, B0, B0, B0, B0, ],
+        vec![ B0, B0, B0, RD, RD, RD, W1, W1, W1, RD, RD, RD, RD, B0, B0, B0, ],
+        vec![ B0, B0, RD, RD, RD, W1, W1, W1, W1, RD, RD, RD, RD, RD, B0, B0, ],
+        vec![ B0, RD, RD, RD, W1, W1, RD, W1, W1, RD, RD, RD, RD, RD, RD, B0, ],
+        vec![ B0, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, B0, ],
+        vec![ RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, ],
+        vec![ RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, ],
+        vec![ RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, ],
+        vec![ RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, ],
+        vec![ RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, ],
+        vec![ RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, ],
+        vec![ B0, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, B0, ],
+        vec![ B0, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, B0, ],
+        vec![ B0, B0, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, B0, B0, ],
+        vec![ B0, B0, B0, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, B0, B0, B0, ],
+        vec![ B0, B0, B0, B0, B0, RD, RD, W1, W1, RD, RD, B0, B0, B0, B0, B0, ],
+    ];
+    pattern
+}
+
+fn a_train_bullet_pattern() -> BulbDisplay {
     let pattern = vec![
         vec![
             B0, B0, B0, B0, B0, BL, BL, BL, BL, BL, BL, B0, B0, B0, B0, B0,
@@ -71,7 +122,6 @@ pub fn pattern_for_train(train: Train) -> BulbDisplay {
             B0, B0, B0, B0, B0, BL, BL, BL, BL, BL, BL, B0, B0, B0, B0, B0,
         ],
     ];
-
     pattern
 }
 

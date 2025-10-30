@@ -55,10 +55,10 @@ impl BulbDisplayConfig {
     pub fn new_from_size(size: BulbDisplaySize) -> Self {
         match size {
             BulbDisplaySize::XSmall => Self::new(16, 160, 4, 1, 0.75),
-            BulbDisplaySize::Small =>  Self::new(16, 160, 4, 2, 1.0),
-            BulbDisplaySize::Medium =>  Self::new(16, 160, 4, 4, 0.75),
+            BulbDisplaySize::Small => Self::new(16, 160, 4, 2, 1.0),
+            BulbDisplaySize::Medium => Self::new(16, 160, 4, 4, 0.75),
             BulbDisplaySize::Large => Self::new(16, 160, 8, 8, 0.75),
-            BulbDisplaySize::XLarge =>  Self::new(16, 160, 10, 16, 0.75),
+            BulbDisplaySize::XLarge => Self::new(16, 160, 10, 16, 0.75),
         }
     }
 
@@ -84,7 +84,9 @@ impl BulbDisplayConfig {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Deserialize, strum::EnumString, strum::Display,
+)]
 pub enum Train {
     One,
     Two,
@@ -137,5 +139,12 @@ mod tests {
             BulbDisplaySize::from_str("xl").unwrap(),
             BulbDisplaySize::XLarge
         );
+    }
+
+    #[test]
+    fn test_train_from_str() {
+        assert_eq!(Train::from_str("One").unwrap(), Train::One);
+        assert_eq!(Train::from_str("A").unwrap(), Train::A);
+        assert_eq!(Train::from_str("Z").unwrap(), Train::Z);
     }
 }
