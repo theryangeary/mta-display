@@ -135,8 +135,19 @@ struct GenerateGifForm {
 }
 
 /// Handle form submission to generate a new GIF, returning the updated markup to replace the existing image.
-async fn post_generate(Form(generate_gif_form): Form<GenerateGifForm>) -> Markup {
-    gif_markup(&generate_gif_form.message)
+async fn post_generate(
+    Form(generate_gif_form): Form<GenerateGifForm>,
+) -> Result<Response, StatusCode> {
+        let url = HeaderValue::from_str(&format!("/?message={}", &generate_gif_form.message)).map_err(|e| {
+        tracing::error!("failed to turn message param into push-url: {}", e);
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+
+    let mut headers = HeaderMap::new();
+    headers.insert(header::CONTENT_TYPE, HeaderValue::from_static("text/html"));
+    headers.insert("hx-push-url", url);
+
+    Ok((headers, gif_markup(&generate_gif_form.message)).into_response())
 }
 
 fn gif_markup(message: &str) -> Markup {
@@ -177,10 +188,6 @@ async fn get_gif_file(Path(message): Path<String>) -> Response {
 }
 
 async fn get_index_markup(Query(message): Query<HashMap<String, String>>) -> Markup {
-    tracing::info!(
-        "Received request for index page with message: {:?}",
-        message
-    );
     let message = message
         .get("message")
         .cloned()
