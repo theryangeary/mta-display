@@ -5,6 +5,7 @@ use rust_embed::Embed;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs::File;
+use std::str::FromStr;
 
 use std::io::Write;
 
@@ -24,6 +25,8 @@ mod types;
 use types::BulbDisplay;
 use types::BulbDisplayConfig;
 
+use crate::types::BulbDisplaySize;
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize tracing
@@ -40,7 +43,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/health", get(health_check))
         .route("/static/{file}", get(get_static_file))
         .route("/generate", post(post_generate))
-        .route("/gif/{message}", get(get_gif_file))
+        .route("/gif/{size}/{message}", get(get_gif_file))
         .layer(TraceLayer::new_for_http());
 
     // Run it on localhost:3000
@@ -152,25 +155,30 @@ async fn post_generate(
 
 fn gif_markup(message: &str) -> Markup {
     html! {
-        img id="mta-sign-gif" src=(&format!("/gif/{}", message)) alt=(&format!("Generated MTA Sign GIF with message {}", message));
+        div class="
+            flex
+            justify-center
+        " {
+            img 
+                id="mta-sign-gif" 
+                src=(&format!("/gif/sm/{}", message)) 
+                alt=(&format!("Generated MTA Display with message {}", message))
+                class="h-auto max-w-full"
+            ;
+        }
     }
 }
 
-async fn get_gif_file(Path(message): Path<String>) -> Response {
-    // config setup
-    let margin = 10;
-    let bulb_rows = 16;
-    let bulb_cols = 160;
-    let bulb_bounding_box_size = 4;
-    let bulb_size_ratio = 0.75;
-
-    let config = BulbDisplayConfig::new(
-        bulb_rows,
-        bulb_cols,
-        margin,
-        bulb_bounding_box_size,
-        bulb_size_ratio,
-    );
+async fn get_gif_file(Path((size, message)): Path<(String, String)>) -> Response {
+    let bulb_display_size = match BulbDisplaySize::from_str(&size) {
+        Ok(s) => s,
+        Err(e) => {
+            tracing::error!("failed to parse size parameter from '{}': {}", size, e);
+            tracing::debug!("defaulting to XSmall size");
+            BulbDisplaySize::XSmall
+        }
+    };
+    let config = BulbDisplayConfig::new_from_size(bulb_display_size);
 
     let train = types::Train::A;
 
@@ -191,23 +199,59 @@ async fn get_index_markup(Query(message): Query<HashMap<String, String>>) -> Mar
     let message = message
         .get("message")
         .cloned()
-        .unwrap_or_else(|| "Welcome to the A train line! Enjoy your ride.".into());
+        .unwrap_or_else(|| "Welcome to the MTA display generator".into());
     html! {
-        (head("MTA Sign GIF Generator"))
+        (head("MTA Display Generator"))
         body {
-            h1 { "MTA Sign GIF Generator" }
-            p { "This is a simple web application that generates GIFs that simulate an MTA subway sign." }
-            (gif_markup(&message))
-            // img id="loading-indicator" class="htmx-indicator" src="/static/grid.svg" alt="Loading...";
-            form
-                hx-post="/generate"
-                hx-target="#mta-sign-gif"
-                hx-swap="outerHTML"
-                // hx-indicator="#loading-indicator"
-            {
-                label for="message" { "Message: " }
-                input type="text" name="message" id="message" value=(&format!("{}", message));
-                button type="submit" { "Generate GIF" }
+            div class="flex justify-center" {
+                div 
+                    class="
+                    grid content-center
+                    max-w-lg
+                    mx-4
+                    "
+                {
+                    h1 { a href="/" { "MTA Display Generator" } }
+                    p class="my-8 justify-center" {
+                        (gif_markup(&message))
+                    }
+                    form
+                        hx-post="/generate"
+                        hx-target="#mta-sign-gif"
+                        hx-swap="outerHTML"
+                        class="
+                            bg-gray-800
+                            border-gray-700
+                            p-4
+                            rounded-xl
+                        "
+                    {
+                        // todo add a tooltip explaining dimensions / char limits
+                        label class="text-gray-200" for="message" { "Message: " }
+                        input 
+                            class="
+                                w-full
+                                p-2
+                                mt-2
+                                mb-4
+                                bg-white
+                                border
+                                border-gray-600
+                                rounded-lg
+                                text-black
+                                focus:outline-none
+                                focus:border-blue-500"
+                            type="textarea" 
+                            name="message" 
+                            id="message" 
+                            placeholder="Type your message here...";
+                        br;
+                        button type="submit" { "Generate" }
+                    }
+
+                    h2 { "About"}
+                    p { "This is a fun side project that generates GIFs that simulate a display as you would see on the New York City MTA Subway." }
+                }
             }
         }
     }

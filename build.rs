@@ -13,4 +13,20 @@ fn main() {
         .arg(out_path)
         .output()
         .expect("failed to copy /static to $OUT_DIR");
+
+    // ./tailwindcss -i input.css -o static/output.css --minify
+    Command::new("./tailwindcss")
+        .arg("-i")
+        .arg("input.css")
+        .arg("-o")
+        .arg(out_path.join("static").join("output.css"))
+        .arg("--minify")
+        .output()
+        .expect("failed to compile tailwind styles");
+
+    Command::new("rm")
+        .arg(out_path.join("static").join("input.css"))
+        .output()
+        .expect("failed to remove input.css");
+
 }

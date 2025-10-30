@@ -1,0 +1,36 @@
+@import 'tailwindcss' source('./src');
+
+@layer base {
+  body {
+    @apply text-black font-sans p-4 items-center;
+  }
+
+  h1 {
+    @apply text-3xl font-normal underline underline-offset-1 text-center mb-4 justify-center;
+  }
+
+  h2 {
+    @apply text-2xl font-bold tracking-wide mb-4 mt-8;
+  }
+
+  p {
+    @apply mb-4;
+  }
+
+  form {
+    @apply mb-4;
+  }
+
+  label {
+    @apply block mb-2;
+  }
+
+  input[type="text"],
+  input[type="textarea"] {
+    @apply w-full p-2 mb-4;
+  }
+
+  button {
+    @apply bg-yellow-500 text-black font-bold py-2 px-4 rounded hover:bg-yellow-600;
+  }
+}

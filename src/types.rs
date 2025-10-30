@@ -2,6 +2,20 @@ use image::Rgb;
 
 use crate::pattern;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumString)]
+pub enum BulbDisplaySize {
+    #[strum(serialize = "xs")]
+    XSmall,
+    #[strum(serialize = "sm")]
+    Small,
+    #[strum(serialize = "md")]
+    Medium,
+    #[strum(serialize = "lg")]
+    Large,
+    #[strum(serialize = "xl")]
+    XLarge,
+}
+
 pub type BulbDisplay = Vec<Vec<Rgb<u8>>>;
 
 pub struct BulbDisplayConfig {
@@ -35,6 +49,16 @@ impl BulbDisplayConfig {
             img_height: height,
             img_width: width,
             bulb_size_ratio,
+        }
+    }
+
+    pub fn new_from_size(size: BulbDisplaySize) -> Self {
+        match size {
+            BulbDisplaySize::XSmall => Self::new(16, 160, 4, 1, 0.75),
+            BulbDisplaySize::Small =>  Self::new(16, 160, 4, 2, 1.0),
+            BulbDisplaySize::Medium =>  Self::new(16, 160, 4, 4, 0.75),
+            BulbDisplaySize::Large => Self::new(16, 160, 8, 8, 0.75),
+            BulbDisplaySize::XLarge =>  Self::new(16, 160, 10, 16, 0.75),
         }
     }
 
@@ -84,4 +108,34 @@ pub enum Train {
     R,
     S,
     Z,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::str::FromStr;
+
+    #[test]
+    fn test_bulb_display_size_from_str() {
+        assert_eq!(
+            BulbDisplaySize::from_str("xs").unwrap(),
+            BulbDisplaySize::XSmall
+        );
+        assert_eq!(
+            BulbDisplaySize::from_str("sm").unwrap(),
+            BulbDisplaySize::Small
+        );
+        assert_eq!(
+            BulbDisplaySize::from_str("md").unwrap(),
+            BulbDisplaySize::Medium
+        );
+        assert_eq!(
+            BulbDisplaySize::from_str("lg").unwrap(),
+            BulbDisplaySize::Large
+        );
+        assert_eq!(
+            BulbDisplaySize::from_str("xl").unwrap(),
+            BulbDisplaySize::XLarge
+        );
+    }
 }
