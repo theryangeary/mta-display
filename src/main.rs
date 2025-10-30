@@ -263,6 +263,12 @@ async fn get_index_markup(Query(params): Query<HashMap<String, String>>) -> Mark
                                 class=" ml-2 p-2 bg-white border border-gray-600 rounded-lg text-black focus:outline-none focus:border-blue-500 "
                             {
                                 option value="One" { "1" }
+                                option value="Two" { "2" }
+                                option value="Three" { "3" }
+                                option value="Four" { "4" }
+                                option value="Five" { "5" }
+                                option value="Six" { "6" }
+                                option value="Seven" { "7" }
                                 option value="A" { "A" }
                                 option value="B" { "B" }
                                 option value="C" { "C" }
@@ -277,6 +283,7 @@ async fn get_index_markup(Query(params): Query<HashMap<String, String>>) -> Mark
                                 option value="Q" { "Q" }
                                 option value="R" { "R" }
                                 option value="S" { "S" }
+                                option value="W" { "W" }
                                 option value="Z" { "Z" }
                             }
                         }
@@ -373,6 +380,7 @@ fn generate_frames_for_message(
     Ok(frames)
 }
 
+// TODO split on newlines too
 fn split_message_into_parts<'a>(config: &BulbDisplayConfig, message: &'a str) -> Vec<&'a str> {
     let mut message_parts = vec![];
 

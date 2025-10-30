@@ -109,6 +109,7 @@ pub enum Train {
     Q,
     R,
     S,
+    W,
     Z,
 }
 
