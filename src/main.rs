@@ -8,12 +8,12 @@ use std::fs::File;
 
 use std::io::Write;
 
-use axum::{Form, Json};
 use axum::extract::{Path, Query};
-use axum::http::{header, HeaderMap, HeaderValue, StatusCode};
+use axum::http::{HeaderMap, HeaderValue, StatusCode, header};
 use axum::response::{IntoResponse, Response};
+use axum::{Form, Json};
 use axum::{Router, routing::get};
-use maud::{html, Markup, DOCTYPE};
+use maud::{DOCTYPE, Markup, html};
 use serde::Deserialize;
 use tokio::signal;
 use tower_http::trace::TraceLayer;
@@ -29,15 +29,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize tracing
     tracing_subscriber::registry()
         .with(
-            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-                "debug".into()
-            }),
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "debug".into()),
         )
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-
-        let app = Router::new()
+    let app = Router::new()
         .route("/", get(get_index_markup))
         .route("/health", get(health_check))
         .route("/static/{file}", get(get_static_file))
@@ -45,7 +43,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/gif/{message}", get(get_gif_file))
         .layer(TraceLayer::new_for_http());
 
-        // Run it on localhost:3000
+    // Run it on localhost:3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
 
     let server =
@@ -138,7 +136,7 @@ struct GenerateGifForm {
 
 /// Handle form submission to generate a new GIF, returning the updated markup to replace the existing image.
 async fn post_generate(Form(generate_gif_form): Form<GenerateGifForm>) -> Markup {
-    (gif_markup(&generate_gif_form.message))
+    gif_markup(&generate_gif_form.message)
 }
 
 fn gif_markup(message: &str) -> Markup {
@@ -179,15 +177,27 @@ async fn get_gif_file(Path(message): Path<String>) -> Response {
 }
 
 async fn get_index_markup(Query(message): Query<HashMap<String, String>>) -> Markup {
-    tracing::info!("Received request for index page with message: {:?}", message);
-    let message = message.get("message").cloned().unwrap_or_else(|| "Welcome to the A train line! Enjoy your ride.".into());
+    tracing::info!(
+        "Received request for index page with message: {:?}",
+        message
+    );
+    let message = message
+        .get("message")
+        .cloned()
+        .unwrap_or_else(|| "Welcome to the A train line! Enjoy your ride.".into());
     html! {
         (head("MTA Sign GIF Generator"))
         body {
             h1 { "MTA Sign GIF Generator" }
             p { "This is a simple web application that generates GIFs that simulate an MTA subway sign." }
             (gif_markup(&message))
-            form hx-post="/generate" hx-target="#mta-sign-gif" hx-swap="outerHTML" {
+            // img id="loading-indicator" class="htmx-indicator" src="/static/grid.svg" alt="Loading...";
+            form
+                hx-post="/generate"
+                hx-target="#mta-sign-gif"
+                hx-swap="outerHTML"
+                // hx-indicator="#loading-indicator"
+            {
                 label for="message" { "Message: " }
                 input type="text" name="message" id="message" value=(&format!("{}", message));
                 button type="submit" { "Generate GIF" }
@@ -196,24 +206,30 @@ async fn get_index_markup(Query(message): Query<HashMap<String, String>>) -> Mar
     }
 }
 
-fn write_frames_to_gif_at_path(config: &BulbDisplayConfig, frames: &Vec<BulbDisplay>, path: std::path::PathBuf) -> Result<(), Box<dyn Error>> {
+fn write_frames_to_gif_at_path(
+    config: &BulbDisplayConfig,
+    frames: &Vec<BulbDisplay>,
+    path: std::path::PathBuf,
+) -> Result<(), Box<dyn Error>> {
     let mut image_file = File::create(path)?;
     write_frames_to_gif(config, frames, &mut image_file)
 }
 
-fn write_frames_to_gif_in_memory(config: &BulbDisplayConfig, frames: &Vec<BulbDisplay>) -> Result<Vec<u8>, Box<dyn Error>> {
+fn write_frames_to_gif_in_memory(
+    config: &BulbDisplayConfig,
+    frames: &Vec<BulbDisplay>,
+) -> Result<Vec<u8>, Box<dyn Error>> {
     let mut buffer: Vec<u8> = vec![];
     write_frames_to_gif(config, frames, &mut buffer)?;
     Ok(buffer)
 }
 
-fn write_frames_to_gif(config: &BulbDisplayConfig, frames: &Vec<BulbDisplay>, output_gif: &mut dyn Write) -> Result<(), Box<dyn Error>> {
-    let mut encoder = Encoder::new(
-         output_gif,
-        config.img_width(),
-        config.img_height(),
-        &[],
-    )?;
+fn write_frames_to_gif(
+    config: &BulbDisplayConfig,
+    frames: &Vec<BulbDisplay>,
+    output_gif: &mut dyn Write,
+) -> Result<(), Box<dyn Error>> {
+    let mut encoder = Encoder::new(output_gif, config.img_width(), config.img_height(), &[])?;
     encoder.set_repeat(Repeat::Infinite)?;
     Ok(for bulb_array in frames {
         let mut img: ImageBuffer<Rgb<_>, Vec<u8>> =
@@ -228,7 +244,8 @@ fn write_frames_to_gif(config: &BulbDisplayConfig, frames: &Vec<BulbDisplay>, ou
         }
 
         // Add frame to GIF
-        let frame = Frame::from_rgb_speed(config.img_width(), config.img_height(), &img.into_raw(), 30);
+        let frame =
+            Frame::from_rgb_speed(config.img_width(), config.img_height(), &img.into_raw(), 30);
 
         let frame_duration = 10;
         for _ in 0..frame_duration {
@@ -237,10 +254,15 @@ fn write_frames_to_gif(config: &BulbDisplayConfig, frames: &Vec<BulbDisplay>, ou
     })
 }
 
-fn generate_frames_for_message(config: &BulbDisplayConfig, train: types::Train, message_parts: Vec<&str>) -> Result<Vec<BulbDisplay>, Box<dyn Error>> {
+fn generate_frames_for_message(
+    config: &BulbDisplayConfig,
+    train: types::Train,
+    message_parts: Vec<&str>,
+) -> Result<Vec<BulbDisplay>, Box<dyn Error>> {
     let mut frames = vec![];
     for msg in &message_parts {
-        let mut bulb_array: BulbDisplay = vec![vec![Rgb([0, 0, 0]); config.num_bulb_cols.into()]; config.num_bulb_rows.into()];
+        let mut bulb_array: BulbDisplay =
+            vec![vec![Rgb([0, 0, 0]); config.num_bulb_cols.into()]; config.num_bulb_rows.into()];
 
         // draw a train bullet in the left edge of the bulb array
         let train_bullet = pattern::pattern_for_train(train);
@@ -392,4 +414,4 @@ mod tests {
         assert_eq!(parts[1], "gwordthatshoul");
         assert_eq!(parts[2], "dbetested");
     }
-} 
+}
