@@ -165,7 +165,8 @@ async fn get_gif_file(Path(message): Path<String>) -> Response {
 
     let train = types::Train::A;
 
-    let message_parts = split_message_into_parts(&config, &message.to_ascii_uppercase());
+    let uppercase_message = message.to_ascii_uppercase();
+    let message_parts = split_message_into_parts(&config, &uppercase_message);
 
     let frames = generate_frames_for_message(&config, train, message_parts).unwrap();
 
@@ -236,7 +237,7 @@ fn write_frames_to_gif(config: &BulbDisplayConfig, frames: &Vec<BulbDisplay>, ou
     })
 }
 
-fn generate_frames_for_message(config: &BulbDisplayConfig, train: types::Train, message_parts: Vec<String>) -> Result<Vec<BulbDisplay>, Box<dyn Error>> {
+fn generate_frames_for_message(config: &BulbDisplayConfig, train: types::Train, message_parts: Vec<&str>) -> Result<Vec<BulbDisplay>, Box<dyn Error>> {
     let mut frames = vec![];
     for msg in &message_parts {
         let mut bulb_array: BulbDisplay = vec![vec![Rgb([0, 0, 0]); config.num_bulb_cols.into()]; config.num_bulb_rows.into()];
@@ -257,26 +258,33 @@ fn generate_frames_for_message(config: &BulbDisplayConfig, train: types::Train, 
     Ok(frames)
 }
 
-fn split_message_into_parts(config: &BulbDisplayConfig, message: &str) -> Vec<String> {
+fn split_message_into_parts<'a>(config: &BulbDisplayConfig, message: &'a str) -> Vec<&'a str> {
     let mut message_parts = vec![];
 
-    let mut words = message.split_whitespace().peekable();
-    while let Some(_) = words.peek() {
-        let mut message_part = String::new();
+    let mut start = 0;
+    let mut last_space = 0;
 
-        while let Some(next_word) = words.peek() {
-            if message_part.len() + next_word.len() <= config.max_chars_per_row() as usize {
-                message_part.push_str(next_word);
-                message_part.push(' ');
-                words.next();
+    // Split message into parts based on max chars per row, without breaking
+    // words unless the word is longer than max chars per row. Avoid adding
+    // trailing whitespace to a row.
+    for (i, chr) in message.char_indices() {
+        if chr.is_whitespace() {
+            last_space = i;
+        }
+        if i - start >= config.max_chars_per_row() as usize {
+            if last_space > start {
+                message_parts.push(&message[start..last_space]);
+                start = last_space + 1; // skip the space
             } else {
-                // current message part is full
-                break;
+                message_parts.push(&message[start..i]);
+                start = i;
             }
         }
-
-        message_parts.push(message_part);
     }
+    if start < message.len() {
+        message_parts.push(&message[start..].trim_end());
+    }
+
     message_parts
 }
 
@@ -354,3 +362,34 @@ fn write_text(
     }
     Ok(ret)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_split_message_into_parts() {
+        let config = BulbDisplayConfig::new(16, 160, 10, 4, 0.75);
+        let message = "This is a test message to split into parts for the MTA sign GIF generator.";
+        let parts = split_message_into_parts(&config, message);
+        assert_eq!(parts.len(), 6);
+        assert_eq!(parts[0], "This is a test");
+        assert_eq!(parts[1], "message to");
+        assert_eq!(parts[2], "split into");
+        assert_eq!(parts[3], "parts for the");
+        assert_eq!(parts[4], "MTA sign GIF");
+        assert_eq!(parts[5], "generator.");
+    }
+
+    #[test]
+    fn test_split_message_into_parts_long_word() {
+        let config = BulbDisplayConfig::new(16, 160, 10, 4, 0.75);
+        let message = "Thisisaverylongwordthatshouldbetested ";
+        let parts = split_message_into_parts(&config, message);
+        let chars_per_row = config.max_chars_per_row() as usize;
+        assert_eq!(parts.len(), message.chars().count() / chars_per_row + 1);
+        assert_eq!(parts[0], "Thisisaverylon");
+        assert_eq!(parts[1], "gwordthatshoul");
+        assert_eq!(parts[2], "dbetested");
+    }
+} 
