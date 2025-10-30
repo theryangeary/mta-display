@@ -158,6 +158,7 @@ fn gif_markup(message: &str) -> Markup {
         div class="
             flex
             justify-center
+            mb-8
         " {
             img 
                 id="mta-sign-gif" 
@@ -212,9 +213,7 @@ async fn get_index_markup(Query(message): Query<HashMap<String, String>>) -> Mar
                     "
                 {
                     h1 { a href="/" { "MTA Display Generator" } }
-                    p class="my-8 justify-center" {
-                        (gif_markup(&message))
-                    }
+                    (gif_markup(&message))
                     form
                         hx-post="/generate"
                         hx-target="#mta-sign-gif"
@@ -224,11 +223,21 @@ async fn get_index_markup(Query(message): Query<HashMap<String, String>>) -> Mar
                             border-gray-700
                             p-4
                             rounded-xl
+                            mb-4
                         "
                     {
-                        // todo add a tooltip explaining dimensions / char limits
-                        label class="text-gray-200" for="message" { "Message: " }
-                        input 
+                        label class="text-gray-200 flex w-100% block mb-2" for="message" { 
+                            span class="flex-grow" { "Message: " }
+                            span class="flex-shrink relative group" {
+                                span class="text-gray-500 cursor-pointer" { "ⓘ" }
+                                span class="absolute hidden group-hover:block bg-gray-300 text-black text-xs rounded py-1 px-2 -left-50 top-full mb-1" {
+                                    p class="mb-1" {"Max 6 rows, 14 characters per row. "}
+                                    p class="mb-1" {"Use linebreaks to separate pages manually. "}
+                                    p class="mb-1" {"Unsupported characters will be ignored." }
+                                }
+                            }
+                        }
+                        textarea 
                             class="
                                 w-full
                                 p-2
@@ -241,10 +250,12 @@ async fn get_index_markup(Query(message): Query<HashMap<String, String>>) -> Mar
                                 text-black
                                 focus:outline-none
                                 focus:border-blue-500"
-                            type="textarea" 
                             name="message" 
                             id="message" 
-                            placeholder="Type your message here...";
+                            rows="4"
+                            placeholder="Type your message here..." {
+                                (message)
+                            }
                         br;
                         button type="submit" { "Generate" }
                     }
