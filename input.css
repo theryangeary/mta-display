@@ -6,11 +6,15 @@
   }
 
   h1 {
-    @apply text-3xl font-normal underline underline-offset-1 text-center mb-12 justify-center;
+    @apply text-3xl font-normal underline underline-offset-2 hover:decoration-2 text-center mb-12 justify-center;
   }
 
   h2 {
     @apply text-2xl font-bold tracking-wide mb-4 mt-8;
+  }
+
+  p.prose {
+    @apply text-base leading-relaxed mb-4;
   }
 
 }
