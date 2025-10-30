@@ -453,12 +453,16 @@ fn write_text(
 
     let num_cols = bulb_array[0].len();
     // todo find actual bullet width
-    let bullet_width = 20;
-    let max_chars = (num_cols - bullet_width) / pattern::LETTER_PATTERN_SLOT_WIDTH as usize;
-    // todo split on words when possible
-    let left_pad = if message.len() < max_chars {
+    let bullet_width = pattern::TRAIN_BULLET_PATTERN_WIDTH as usize + pattern::TRAIN_BULLET_PATTERN_SPACING as usize;
+
+    // find width of all chars in message plus inter-character spacing
+    let message_width: usize = message.chars().map(|c| {
+        pattern::pattern_for_letter(c)[0].len() + pattern::LETTER_PATTERN_SPACING as usize
+    }).sum();
+
+    let left_pad = if message_width < (num_cols - bullet_width) {
         bullet_width
-            + ((max_chars - message.len()) * pattern::LETTER_PATTERN_SLOT_WIDTH as usize) / 2
+            + (num_cols - bullet_width - message_width) / 2
     } else {
         bullet_width
     };
