@@ -133,24 +133,24 @@ fn head(title: &str) -> Markup {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 struct GenerateGifForm {
     message: String,
     train: Train,
 }
 
 /// Handle form submission to generate a new GIF, returning the updated markup to replace the existing image.
-/// 
-/// TODO this may be breaking if newlines are included in the message, need to test and possibly URL-encode.
 async fn post_generate(
     Form(generate_gif_form): Form<GenerateGifForm>,
 ) -> Result<Response, StatusCode> {
-    let url = HeaderValue::from_str(&format!(
+    let encoded_message = urlencoding::encode(&generate_gif_form.message);
+    let header_input = format!(
         "/?message={}&train={}",
-        &generate_gif_form.message, &generate_gif_form.train
-    ))
+        encoded_message, &generate_gif_form.train
+    );
+    let url = HeaderValue::from_str(&header_input)
     .map_err(|e| {
-        tracing::error!("failed to turn message param into push-url: {}", e);
+        tracing::error!("failed to turn message param into push-url: {}. HeaderValue input: {}", e, header_input);
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
 
@@ -166,13 +166,14 @@ async fn post_generate(
 }
 
 fn gif_markup(train: Train, message: &str) -> Markup {
+    let url_encoded_message = urlencoding::encode(message);
     html! {
         div id="mta-sign-gif" {
             div 
                 class=" flex justify-center mb-4 "
             {
                 img
-                    src=(&format!("/gif/md/{}/{}", train, message))
+                    src=(&format!("/gif/md/{}/{}", train, url_encoded_message))
                     alt=(&format!("Generated MTA Display with message {}", message))
                     class="h-auto max-w-full"
                 ;
@@ -180,10 +181,10 @@ fn gif_markup(train: Train, message: &str) -> Markup {
 
             div class=" mb-8 flex justify-center " {            
                 div class=" divide-x-1 divide-yellow-700 rounded-xl " {
-                    button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 rounded-l-xl" { a target="_blank" href=(format!("/gif/sm/{}/{}", train, message)) { "Small" } } 
-                    button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 " { a target="_blank" href=(format!("/gif/md/{}/{}", train, message)) { "Medium" } } 
-                    button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 " { a target="_blank" href=(format!("/gif/lg/{}/{}", train, message)) { "Large" } } 
-                    button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 rounded-r-xl" { a target="_blank" href=(format!("/gif/xl/{}/{}", train, message)) { "Extra Large" } } 
+                    button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 rounded-l-xl" { a target="_blank" href=(format!("/gif/sm/{}/{}", train, url_encoded_message)) { "Small" } }
+                    button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 " { a target="_blank" href=(format!("/gif/md/{}/{}", train, url_encoded_message)) { "Medium" } }
+                    button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 " { a target="_blank" href=(format!("/gif/lg/{}/{}", train, url_encoded_message)) { "Large" } }
+                    button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 rounded-r-xl" { a target="_blank" href=(format!("/gif/xl/{}/{}", train, url_encoded_message)) { "Extra Large" } }
                 }
             }
         }
@@ -275,6 +276,7 @@ async fn get_index_markup(Query(params): Query<HashMap<String, String>>) -> Mark
 
                         label class=" flex w-100% block mb-2" for="train" {
                             span class="flex-grow" { "Train: " }
+                            // todo layout all bullets in a grid for selection
                             select
                                 name="train"
                                 id="train"
@@ -395,7 +397,6 @@ fn generate_frames_for_message(
     Ok(frames)
 }
 
-// TODO split on newlines too
 fn split_message_into_parts<'a>(config: &BulbDisplayConfig, message: &'a str) -> Vec<&'a str> {
     let mut message_parts = vec![];
 
@@ -404,12 +405,12 @@ fn split_message_into_parts<'a>(config: &BulbDisplayConfig, message: &'a str) ->
 
     // Split message into parts based on max chars per row, without breaking
     // words unless the word is longer than max chars per row. Avoid adding
-    // trailing whitespace to a row.
+    // trailing whitespace to a row. Always break at newlines.
     for (i, chr) in message.char_indices() {
         if chr.is_whitespace() {
             last_space = i;
         }
-        if i - start >= config.max_chars_per_row() as usize {
+        if i - start >= config.max_chars_per_row() as usize || chr == '\n' {
             if last_space > start {
                 message_parts.push(&message[start..last_space]);
                 start = last_space + 1; // skip the space
@@ -537,5 +538,33 @@ mod tests {
         assert_eq!(parts[0], "Thisisaverylon");
         assert_eq!(parts[1], "gwordthatshoul");
         assert_eq!(parts[2], "dbetested");
+    }
+
+    #[test]
+    fn test_split_message_into_parts_with_newlines() {
+        let config = BulbDisplayConfig::new(16, 160, 10, 4, 0.75);
+        let message = "This is a test\nmessage with newlines\nto split into parts.";
+        let parts = split_message_into_parts(&config, message);
+        assert_eq!(parts.len(), 5);
+        assert_eq!(parts[0], "This is a test");
+        assert_eq!(parts[1], "message with");
+        assert_eq!(parts[2], "newlines");
+        assert_eq!(parts[3], "to split into");
+        assert_eq!(parts[4], "parts.");   
+    }
+
+    #[test]
+    fn test_split_message_into_parts_newlines() {
+        let config = BulbDisplayConfig::new(16, 160, 10, 4, 0.75);
+        let message = "new message
+I want a newline
+another newline";
+        let parts = split_message_into_parts(&config, message);
+        assert_eq!(parts.len(), 5);
+        assert_eq!(parts[0], "new message");
+        assert_eq!(parts[1], "I want a");
+        assert_eq!(parts[2], "newline");
+        assert_eq!(parts[3], "another");
+        assert_eq!(parts[4], "newline");
     }
 }
