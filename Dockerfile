@@ -34,9 +34,9 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-COPY --from=builder /app/target/release/mta-sign /mta-sign
+COPY --from=builder /app/target/release/mta-display /mta-display
 
 EXPOSE 3000
 
-ENTRYPOINT ["/mta-sign"]
+ENTRYPOINT ["/mta-display"]
 
