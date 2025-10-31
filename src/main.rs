@@ -140,6 +140,8 @@ struct GenerateGifForm {
 }
 
 /// Handle form submission to generate a new GIF, returning the updated markup to replace the existing image.
+/// 
+/// TODO this may be breaking if newlines are included in the message, need to test and possibly URL-encode.
 async fn post_generate(
     Form(generate_gif_form): Form<GenerateGifForm>,
 ) -> Result<Response, StatusCode> {
@@ -165,14 +167,25 @@ async fn post_generate(
 
 fn gif_markup(train: Train, message: &str) -> Markup {
     html! {
-        div id="mta-sign-gif"
-            class=" flex justify-center mb-8 "
-        {
-            img
-                src=(&format!("/gif/sm/{}/{}", train, message))
-                alt=(&format!("Generated MTA Display with message {}", message))
-                class="h-auto max-w-full"
-            ;
+        div id="mta-sign-gif" {
+            div 
+                class=" flex justify-center mb-4 "
+            {
+                img
+                    src=(&format!("/gif/md/{}/{}", train, message))
+                    alt=(&format!("Generated MTA Display with message {}", message))
+                    class="h-auto max-w-full"
+                ;
+            }
+
+            div class=" mb-8 flex justify-center " {            
+                div class=" divide-x-1 divide-yellow-700 rounded-xl " {
+                    button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 rounded-l-xl" { a target="_blank" href=(format!("/gif/sm/{}/{}", train, message)) { "Small" } } 
+                    button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 " { a target="_blank" href=(format!("/gif/md/{}/{}", train, message)) { "Medium" } } 
+                    button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 " { a target="_blank" href=(format!("/gif/lg/{}/{}", train, message)) { "Large" } } 
+                    button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 rounded-r-xl" { a target="_blank" href=(format!("/gif/xl/{}/{}", train, message)) { "Extra Large" } } 
+                }
+            }
         }
     }
 }
@@ -222,7 +235,11 @@ async fn get_index_markup(Query(params): Query<HashMap<String, String>>) -> Mark
                     "
                 {
                     h1 { a href="/" { "MTA Display Generator" } }
+
                     (gif_markup(train, &message))
+
+                    h2 { "Make your own!" }
+
                     form
                         hx-post="/generate"
                         hx-target="#mta-sign-gif"
