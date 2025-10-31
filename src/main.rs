@@ -204,8 +204,13 @@ async fn get_gif_file(Path((size, train, message)): Path<(String, Train, String)
 
     let uppercase_message = message.to_ascii_uppercase();
     let message_parts = split_message_into_parts(&config, &uppercase_message);
+    // prevent screens that would show only blank rows
+    let visible_message_parts: Vec<&str> = message_parts
+        .into_iter()
+        .filter(|s| !s.is_empty())
+        .collect();
 
-    let frames = generate_frames_for_message(&config, train, message_parts).unwrap();
+    let frames = generate_frames_for_message(&config, train, visible_message_parts).unwrap();
 
     let gif_data = write_frames_to_gif_in_memory(&config, &frames).unwrap();
 
@@ -471,7 +476,6 @@ fn write_text(
     let mut ret = 0;
 
     let num_cols = bulb_array[0].len();
-    // todo find actual bullet width
     let bullet_width = pattern::TRAIN_BULLET_PATTERN_WIDTH as usize
         + pattern::TRAIN_BULLET_PATTERN_SPACING as usize;
 
