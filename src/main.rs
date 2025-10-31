@@ -344,13 +344,10 @@ fn write_frames_to_gif(
         }
 
         // Add frame to GIF
-        let frame =
+        let mut frame =
             Frame::from_rgb_speed(config.img_width(), config.img_height(), &img.into_raw(), 30);
-
-        let frame_duration = 10;
-        for _ in 0..frame_duration {
-            encoder.write_frame(&frame)?;
-        }
+        frame.delay = 85;
+        encoder.write_frame(&frame)?;
     })
 }
 
