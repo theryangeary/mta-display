@@ -542,44 +542,108 @@ fn b_train_bullet_pattern() -> BulbDisplay {
 
 fn c_train_bullet_pattern() -> BulbDisplay {
     let pattern = vec![
-        vec![ B0, B0, B0, B0, B0, BL, BL, BL, BL, BL, BL, B0, B0, B0, B0, B0, ],
-        vec![ B0, B0, B0, BL, BL, BL, W1, W1, W1, BL, BL, BL, BL, B0, B0, B0, ],
-        vec![ B0, B0, BL, BL, BL, W1, W1, W1, W1, W1, BL, BL, BL, BL, B0, B0, ],
-        vec![ B0, BL, BL, BL, W1, W1, BL, BL, BL, W1, W1, BL, BL, BL, BL, B0, ],
-        vec![ B0, BL, BL, BL, W1, W1, BL, BL, BL, BL, BL, BL, BL, BL, BL, B0, ],
-        vec![ BL, BL, BL, W1, W1, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL, ],
-        vec![ BL, BL, BL, W1, W1, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL, ],
-        vec![ BL, BL, BL, W1, W1, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL, ],
-        vec![ BL, BL, BL, W1, W1, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL, ],
-        vec![ BL, BL, BL, W1, W1, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL, ],
-        vec![ BL, BL, BL, W1, W1, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL, ],
-        vec![ B0, BL, BL, BL, W1, W1, BL, BL, BL, BL, BL, BL, BL, BL, BL, B0, ],
-        vec![ B0, BL, BL, BL, W1, W1, BL, BL, BL, W1, W1, BL, BL, BL, BL, B0, ],
-        vec![ B0, B0, BL, BL, BL, W1, W1, W1, W1, W1, BL, BL, BL, BL, B0, B0, ],
-        vec![ B0, B0, B0, BL, BL, BL, W1, W1, W1, BL, BL, BL, BL, B0, B0, B0, ],
-        vec![ B0, B0, B0, B0, B0, BL, BL, BL, BL, BL, BL, B0, B0, B0, B0, B0, ],
+        vec![
+            B0, B0, B0, B0, B0, BL, BL, BL, BL, BL, BL, B0, B0, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, BL, BL, BL, W1, W1, W1, W1, BL, BL, BL, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, BL, BL, BL, W1, W1, W1, W1, W1, W1, BL, BL, BL, B0, B0,
+        ],
+        vec![
+            B0, BL, BL, BL, W1, W1, BL, BL, BL, BL, W1, W1, BL, BL, BL, B0,
+        ],
+        vec![
+            B0, BL, BL, BL, W1, W1, BL, BL, BL, BL, W1, W1, BL, BL, BL, B0,
+        ],
+        vec![
+            BL, BL, BL, W1, W1, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL,
+        ],
+        vec![
+            BL, BL, BL, W1, W1, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL,
+        ],
+        vec![
+            BL, BL, BL, W1, W1, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL,
+        ],
+        vec![
+            BL, BL, BL, W1, W1, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL,
+        ],
+        vec![
+            BL, BL, BL, W1, W1, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL,
+        ],
+        vec![
+            BL, BL, BL, W1, W1, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL, BL,
+        ],
+        vec![
+            B0, BL, BL, BL, W1, W1, BL, BL, BL, BL, W1, W1, BL, BL, BL, B0,
+        ],
+        vec![
+            B0, BL, BL, BL, W1, W1, BL, BL, BL, BL, W1, W1, BL, BL, BL, B0,
+        ],
+        vec![
+            B0, B0, BL, BL, BL, W1, W1, W1, W1, W1, W1, BL, BL, BL, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, BL, BL, BL, W1, W1, W1, W1, BL, BL, BL, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, B0, B0, BL, BL, BL, BL, BL, BL, B0, B0, B0, B0, B0,
+        ],
     ];
     pattern
 }
 
 fn d_train_bullet_pattern() -> BulbDisplay {
     let pattern = vec![
-        vec![ B0, B0, B0, B0, B0, OR, OR, OR, OR, OR, OR, B0, B0, B0, B0, B0, ],
-        vec![ B0, B0, B0, OR, OR, OR, OR, OR, OR, OR, OR, OR, OR, B0, B0, B0, ],
-        vec![ B0, B0, OR, OR, W1, W1, W1, W1, W1, W1, OR, OR, OR, OR, B0, B0, ],
-        vec![ B0, OR, OR, OR, W1, W1, W1, W1, W1, W1, W1, OR, OR, OR, OR, B0, ],
-        vec![ B0, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, B0, ],
-        vec![ OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, ],
-        vec![ OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, ],
-        vec![ OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, ],
-        vec![ OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, ],
-        vec![ OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, ],
-        vec![ OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, ],
-        vec![ B0, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, B0, ],
-        vec![ B0, OR, OR, OR, W1, W1, W1, W1, W1, W1, W1, OR, OR, OR, OR, B0, ],
-        vec![ B0, B0, OR, OR, OR, W1, W1, W1, W1, W1, OR, OR, OR, OR, B0, B0, ],
-        vec![ B0, B0, B0, OR, OR, OR, OR, OR, OR, OR, OR, OR, OR, B0, B0, B0, ],
-        vec![ B0, B0, B0, B0, B0, OR, OR, OR, OR, OR, OR, B0, B0, B0, B0, B0, ],
+        vec![
+            B0, B0, B0, B0, B0, OR, OR, OR, OR, OR, OR, B0, B0, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, OR, OR, OR, OR, OR, OR, OR, OR, OR, OR, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, OR, OR, W1, W1, W1, W1, W1, W1, OR, OR, OR, OR, B0, B0,
+        ],
+        vec![
+            B0, OR, OR, OR, W1, W1, W1, W1, W1, W1, W1, OR, OR, OR, OR, B0,
+        ],
+        vec![
+            B0, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, B0,
+        ],
+        vec![
+            OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, OR,
+        ],
+        vec![
+            OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, OR,
+        ],
+        vec![
+            OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, OR,
+        ],
+        vec![
+            OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, OR,
+        ],
+        vec![
+            OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, OR,
+        ],
+        vec![
+            OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, OR,
+        ],
+        vec![
+            B0, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, B0,
+        ],
+        vec![
+            B0, OR, OR, OR, W1, W1, W1, W1, W1, W1, W1, OR, OR, OR, OR, B0,
+        ],
+        vec![
+            B0, B0, OR, OR, OR, W1, W1, W1, W1, W1, OR, OR, OR, OR, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, OR, OR, OR, OR, OR, OR, OR, OR, OR, OR, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, B0, B0, OR, OR, OR, OR, OR, OR, B0, B0, B0, B0, B0,
+        ],
     ];
     pattern
 }
