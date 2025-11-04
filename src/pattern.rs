@@ -1136,22 +1136,54 @@ fn r_train_bullet_pattern() -> BulbDisplay {
 
 fn s_train_bullet_pattern() -> BulbDisplay {
     let pattern = vec![
-        vec![ B0, B0, B0, B0, B0, GY, GY, GY, GY, GY, GY, B0, B0, B0, B0, B0, ],
-        vec![ B0, B0, B0, GY, GY, GY, W1, W1, W1, GY, GY, GY, GY, B0, B0, B0, ],
-        vec![ B0, B0, GY, GY, GY, W1, W1, W1, W1, W1, GY, GY, GY, GY, B0, B0, ],
-        vec![ B0, GY, GY, GY, W1, W1, GY, GY, GY, W1, W1, GY, GY, GY, GY, B0, ],
-        vec![ B0, GY, GY, GY, W1, W1, GY, GY, GY, GY, GY, GY, GY, GY, GY, B0, ],
-        vec![ GY, GY, GY, GY, W1, W1, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, ],
-        vec![ GY, GY, GY, GY, W1, W1, W1, W1, W1, GY, GY, GY, GY, GY, GY, GY, ],
-        vec![ GY, GY, GY, GY, GY, W1, W1, W1, W1, W1, GY, GY, GY, GY, GY, GY, ],
-        vec![ GY, GY, GY, GY, GY, GY, GY, GY, GY, W1, W1, GY, GY, GY, GY, GY, ],
-        vec![ GY, GY, GY, GY, GY, GY, GY, GY, GY, W1, W1, GY, GY, GY, GY, GY, ],
-        vec![ GY, GY, GY, GY, GY, GY, GY, GY, GY, W1, W1, GY, GY, GY, GY, GY, ],
-        vec![ B0, GY, GY, GY, GY, GY, GY, GY, GY, W1, W1, GY, GY, GY, GY, B0, ],
-        vec![ B0, GY, GY, GY, W1, W1, GY, GY, GY, W1, W1, GY, GY, GY, GY, B0, ],
-        vec![ B0, B0, GY, GY, GY, W1, W1, W1, W1, W1, GY, GY, GY, GY, B0, B0, ],
-        vec![ B0, B0, B0, GY, GY, GY, W1, W1, W1, GY, GY, GY, GY, B0, B0, B0, ],
-        vec![ B0, B0, B0, B0, B0, GY, GY, GY, GY, GY, GY, B0, B0, B0, B0, B0, ],
+        vec![
+            B0, B0, B0, B0, B0, GY, GY, GY, GY, GY, GY, B0, B0, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, GY, GY, GY, W1, W1, W1, W1, GY, GY, GY, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, GY, GY, GY, W1, W1, W1, W1, W1, W1, GY, GY, GY, B0, B0,
+        ],
+        vec![
+            B0, GY, GY, GY, W1, W1, GY, GY, GY, GY, W1, W1, GY, GY, GY, B0,
+        ],
+        vec![
+            B0, GY, GY, GY, W1, W1, GY, GY, GY, GY, W1, W1, GY, GY, GY, B0,
+        ],
+        vec![
+            GY, GY, GY, GY, W1, W1, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY,
+        ],
+        vec![
+            GY, GY, GY, GY, W1, W1, GY, GY, GY, GY, GY, GY, GY, GY, GY, GY,
+        ],
+        vec![
+            GY, GY, GY, GY, GY, W1, W1, W1, W1, W1, GY, GY, GY, GY, GY, GY,
+        ],
+        vec![
+            GY, GY, GY, GY, GY, GY, W1, W1, W1, W1, W1, GY, GY, GY, GY, GY,
+        ],
+        vec![
+            GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, W1, W1, GY, GY, GY, GY,
+        ],
+        vec![
+            GY, GY, GY, GY, GY, GY, GY, GY, GY, GY, W1, W1, GY, GY, GY, GY,
+        ],
+        vec![
+            B0, GY, GY, GY, W1, W1, GY, GY, GY, GY, W1, W1, GY, GY, GY, B0,
+        ],
+        vec![
+            B0, GY, GY, GY, W1, W1, GY, GY, GY, GY, W1, W1, GY, GY, GY, B0,
+        ],
+        vec![
+            B0, B0, GY, GY, GY, W1, W1, W1, W1, W1, W1, GY, GY, GY, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, GY, GY, GY, W1, W1, W1, W1, GY, GY, GY, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, B0, B0, GY, GY, GY, GY, GY, GY, B0, B0, B0, B0, B0,
+        ],
     ];
     pattern
 }
