@@ -13,31 +13,18 @@ pub const TRAIN_BULLET_PATTERN_SPACING: u16 = 4;
 pub const TRAIN_BULLET_PATTERN_HEIGHT: u16 = 16;
 
 // short names for colors used in patterns, makes patterns easier to read as they becomes somewhat 1:1 aspect ratio
-/// White
 // Color definitions for MTA lines
-const W1: Rgb<u8> = Rgb([255, 255, 255]);  // White (letters/numbers)
-const B0: Rgb<u8> = Rgb([0, 0, 0]);        // Black (background)
-const BL: Rgb<u8> = Rgb([0, 204, 255]);    // ACE blue
-const RD: Rgb<u8> = Rgb([255, 0, 0]);      // 123 red
-const GR: Rgb<u8> = Rgb([0, 147, 0]);      // 456 green
-const PU: Rgb<u8> = Rgb([185, 51, 173]);   // 7 purple
-const OR: Rgb<u8> = Rgb([255, 99, 25]);    // BDFM orange
-const LG: Rgb<u8> = Rgb([108, 190, 69]);   // G light green
-const BR: Rgb<u8> = Rgb([153, 102, 51]);   // JZ brown
-const GY: Rgb<u8> = Rgb([167, 169, 172]);  // LS gray
-const YE: Rgb<u8> = Rgb([252, 204, 10]);   // NQRW yellow
-// Color definitions for MTA lines
-// RD - Red (1,2,3)
-// GR - Green (4,5,6)
-// PU - Purple (7)
-// BL - Blue (A,C,E)
-// OR - Orange (B,D,F,M)
-// LG - Light Green (G)
-// BR - Brown (J,Z)
-// GY - Gray (L,S)
-// YE - Yellow (N,Q,R,W)
-// W1 - White (letters/numbers)
-// B0 - Background/transparent
+const W1: Rgb<u8> = Rgb([255, 255, 255]); // White (letters/numbers)
+const B0: Rgb<u8> = Rgb([0, 0, 0]); // Black (background)
+const BL: Rgb<u8> = Rgb([0, 204, 255]); // ACE blue
+const RD: Rgb<u8> = Rgb([255, 0, 0]); // 123 red
+const GR: Rgb<u8> = Rgb([0, 147, 0]); // 456 green
+const PU: Rgb<u8> = Rgb([185, 51, 173]); // 7 purple
+const OR: Rgb<u8> = Rgb([255, 99, 25]); // BDFM orange
+const LG: Rgb<u8> = Rgb([108, 190, 69]); // G light green
+const BR: Rgb<u8> = Rgb([153, 102, 51]); // JZ brown
+const GY: Rgb<u8> = Rgb([167, 169, 172]); // LS gray
+const YE: Rgb<u8> = Rgb([252, 204, 10]); // NQRW yellow
 
 pub fn pattern_for_train(train: Train) -> BulbDisplay {
     match train {
@@ -91,20 +78,20 @@ fn one_train_bullet_pattern() -> BulbDisplay {
 
 fn two_train_bullet_pattern() -> BulbDisplay {
     let pattern = vec![
-        vec![ B0, B0, B0, B0, B0, RD, RD, RD, RD, RD, RD, B0, B0, B0, B0, B0, ],
-        vec![ B0, B0, B0, RD, RD, RD, W1, W1, W1, RD, RD, RD, RD, B0, B0, B0, ],
-        vec![ B0, B0, RD, RD, RD, W1, W1, W1, W1, W1, RD, RD, RD, RD, B0, B0, ],
-        vec![ B0, RD, RD, RD, W1, W1, RD, RD, RD, W1, W1, RD, RD, RD, RD, B0, ],
-        vec![ B0, RD, RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, B0, ],
+        vec![ B0, B0, B0, B0, B0, RD, RD, RD, RD, RD, RD, B0, B0, B0, B0, B0, ], 
+        vec![ B0, B0, B0, RD, RD, RD, W1, W1, W1, W1, RD, RD, RD, B0, B0, B0, ],
+        vec![ B0, B0, RD, RD, RD, W1, W1, W1, W1, W1, W1, RD, RD, RD, B0, B0, ],
+        vec![ B0, RD, RD, RD, W1, W1, RD, RD, RD, RD, W1, W1, RD, RD, RD, B0, ],
+        vec![ B0, RD, RD, RD, W1, W1, RD, RD, RD, RD, W1, W1, RD, RD, RD, B0, ],
+        vec![ RD, RD, RD, RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, ],
+        vec![ RD, RD, RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, ],
         vec![ RD, RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, ],
-        vec![ RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, ],
-        vec![ RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, RD, ],
+        vec![ RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, ], 
+        vec![ RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, RD, ], 
         vec![ RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, RD, RD, ],
-        vec![ RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, RD, RD, RD, ],
-        vec![ RD, RD, RD, W1, W1, W1, W1, W1, W1, W1, W1, W1, RD, RD, RD, RD, ],
-        vec![ B0, RD, RD, W1, W1, W1, W1, W1, W1, W1, W1, W1, RD, RD, RD, B0, ],
-        vec![ B0, RD, RD, W1, W1, W1, W1, W1, W1, W1, W1, W1, RD, RD, RD, B0, ],
-        vec![ B0, B0, RD, RD, RD, RD, RD, RD, RD, RD, RD, RD, RD, RD, B0, B0, ],
+        vec![ B0, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, RD, RD, B0, ],
+        vec![ B0, RD, RD, RD, W1, W1, W1, W1, W1, W1, W1, W1, RD, RD, RD, B0, ],
+        vec![ B0, B0, RD, RD, W1, W1, W1, W1, W1, W1, W1, W1, RD, RD, B0, B0, ],
         vec![ B0, B0, B0, RD, RD, RD, RD, RD, RD, RD, RD, RD, RD, B0, B0, B0, ],
         vec![ B0, B0, B0, B0, B0, RD, RD, RD, RD, RD, RD, B0, B0, B0, B0, B0, ],
     ];
