@@ -7,6 +7,7 @@ FROM chef AS planner
 
 COPY Cargo.toml Cargo.lock build.rs ./
 COPY src ./src
+COPY migrations ./migrations
 
 RUN cargo chef prepare --recipe-path recipe.json
 
