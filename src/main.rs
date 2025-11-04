@@ -23,15 +23,15 @@ use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod db;
-mod pattern;
 mod models;
+mod pattern;
 mod types;
 use types::BulbDisplay;
 use types::BulbDisplayConfig;
 
 use crate::db::{Database, SqliteDatabase};
-use crate::types::{BulbDisplaySize, Train};
 use crate::models::GalleryEntry;
+use crate::types::{BulbDisplaySize, Train};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -166,6 +166,7 @@ fn get_gallery_entry_markup() -> Markup {
 
                     form
                         hx-post="/gallery/entry"
+                        hx-target="body"
                         class="bg-gray-200 border-gray-300 p-4 rounded-xl mb-4"
                     {
                         label class="flex w-100% block mb-2" for="message" {
@@ -233,7 +234,7 @@ fn get_gallery_entry_markup() -> Markup {
                         button type="submit" class=" bg-yellow-500 text-black font-bold py-2 px-4 rounded hover:bg-yellow-600 " { "Submit to Gallery" }
                     }
                 }
-            }   
+            }
         }
     }
 }
@@ -269,23 +270,45 @@ async fn post_gallery_entry(
 
     let mut headers = HeaderMap::new();
     headers.insert(header::CONTENT_TYPE, HeaderValue::from_static("text/html"));
-    headers.insert("hx-redirect", "/gallery".parse().unwrap());
+    headers.insert("hx-push-url", "/gallery".parse().unwrap());
 
-    Ok((StatusCode::CREATED, headers).into_response())
+    let markup = get_gallery_with_banner_markup(State(db)).await?;
+
+    Ok((headers, markup).into_response())
 }
 
-async fn get_gallery(
-    State(db): State<Arc<dyn Database>>,
-) -> Result<Markup, StatusCode> {
+async fn get_gallery(State(db): State<Arc<dyn Database>>) -> Result<Markup, StatusCode> {
     let entries = db.list_approved_gallery_entries().await.map_err(|e| {
         tracing::error!("failed to get gallery entries: {}", e);
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
 
-    Ok(get_gallery_markup(entries))
+    Ok(get_gallery_markup(entries, None))
 }
 
-fn get_gallery_markup(entries: Vec<GalleryEntry>) -> Markup {
+async fn get_gallery_with_banner_markup(
+    State(db): State<Arc<dyn Database>>,
+) -> Result<Response, StatusCode> {
+    let entries = db.list_approved_gallery_entries().await.map_err(|e| {
+        tracing::error!("failed to get gallery entries: {}", e);
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+
+    let mut headers = HeaderMap::new();
+    headers.insert(header::CONTENT_TYPE, HeaderValue::from_static("text/html"));
+    headers.insert("hx-push-url", "/gallery".parse().unwrap());
+
+    Ok((
+        headers,
+        get_gallery_markup(
+            entries,
+            Some("Your submission has been received and is pending approval.".into()),
+        ),
+    )
+        .into_response())
+}
+
+fn get_gallery_markup(entries: Vec<GalleryEntry>, banner: Option<String>) -> Markup {
     html! {
         (head("Gallery"))
         body {
@@ -297,7 +320,19 @@ fn get_gallery_markup(entries: Vec<GalleryEntry>) -> Markup {
                     mx-4
                     "
                 {
-                    h1 { a href="/" { "Gallery" } }
+                    h1 class="mb-4" { a href="/" { "Gallery" } }
+
+                    @if let Some(banner_msg) = banner {
+                        div class=" bg-green-200 border border-green-400 text-green-800 px-4 py-3 rounded relative mb-4 " role="alert" {
+                            strong class=" font-bold " { "Success! " }
+                            span class=" block sm:inline " { (banner_msg) }
+                        }
+                    }
+
+                    // link to submit new entry page
+                    p class=" mb-8 w-full text-right " {
+                        a href="/gallery/entry" class=" text-blue-500 hover:underline text-right" { "✒ Create Submission" }
+                    }
 
                     @for entry in entries {
                         div class=" mb-8 " {
@@ -328,7 +363,7 @@ fn get_gallery_markup(entries: Vec<GalleryEntry>) -> Markup {
                                 (entry.submitted_at.format("%Y-%m-%d"))
                             }
 
-                            
+
                         }
                     }
                 }
