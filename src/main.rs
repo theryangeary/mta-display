@@ -199,19 +199,7 @@ fn get_gallery_entry_markup() -> Markup {
 
                         label class=" flex w-100% block mb-2" for="train" {
                             span class="flex-grow" { "Train: " }
-                            // todo layout all bullets in a grid for selection
-                            select
-                                name="train"
-                                id="train"
-                                class=" ml-2 p-2 bg-white border border-gray-600 rounded-lg text-black focus:outline-none focus:border-blue-500 "
-                            {
-                                option value="One" { "1" }
-                                option value="Two" { "2" }
-                                option value="Three" { "3" }
-                                option value="Four" { "4" }
-                                option value="Five" { "5" }
-                                option value="Six" { "6" }
-                            }
+                            (select_train())
                         }
 
                         label class=" flex w-100% block mb-2" for="submitter_name" {
@@ -625,36 +613,7 @@ async fn get_index_markup(Query(params): Query<HashMap<String, String>>) -> Mark
 
                         label class=" flex w-100% block mb-2" for="train" {
                             span class="flex-grow" { "Train: " }
-                            // todo layout all bullets in a grid for selection
-                            select
-                                name="train"
-                                id="train"
-                                class=" ml-2 p-2 bg-white border border-gray-600 rounded-lg text-black focus:outline-none focus:border-blue-500 "
-                            {
-                                option value="One" { "1" }
-                                option value="Two" { "2" }
-                                option value="Three" { "3" }
-                                option value="Four" { "4" }
-                                option value="Five" { "5" }
-                                option value="Six" { "6" }
-                                option value="Seven" { "7" }
-                                option value="A" { "A" }
-                                option value="B" { "B" }
-                                option value="C" { "C" }
-                                option value="D" { "D" }
-                                option value="E" { "E" }
-                                option value="F" { "F" }
-                                option value="G" { "G" }
-                                option value="J" { "J" }
-                                option value="L" { "L" }
-                                option value="M" { "M" }
-                                option value="N" { "N" }
-                                option value="Q" { "Q" }
-                                option value="R" { "R" }
-                                option value="S" { "S" }
-                                option value="W" { "W" }
-                                option value="Z" { "Z" }
-                            }
+                            (select_train())
                         }
 
                         button type="submit" class=" bg-yellow-500 text-black font-bold py-2 px-4 rounded hover:bg-yellow-600 " { "Generate" }
@@ -675,6 +634,41 @@ async fn get_index_markup(Query(params): Query<HashMap<String, String>>) -> Mark
                     }
                 }
             }
+        }
+    }
+}
+
+fn select_train() -> Markup {
+    html! {
+        // todo layout all bullets in a grid for selection
+        select
+            name="train"
+            id="train"
+            class=" ml-2 p-2 bg-white border border-gray-600 rounded-lg text-black focus:outline-none focus:border-blue-500 "
+        {
+            option value="One" { "1" }
+            option value="Two" { "2" }
+            option value="Three" { "3" }
+            option value="Four" { "4" }
+            option value="Five" { "5" }
+            option value="Six" { "6" }
+            option value="Seven" { "7" }
+            option value="A" { "A" }
+            option value="B" { "B" }
+            option value="C" { "C" }
+            option value="D" { "D" }
+            option value="E" { "E" }
+            option value="F" { "F" }
+            option value="G" { "G" }
+            option value="J" { "J" }
+            option value="L" { "L" }
+            option value="M" { "M" }
+            option value="N" { "N" }
+            option value="Q" { "Q" }
+            option value="R" { "R" }
+            option value="S" { "S" }
+            option value="W" { "W" }
+            option value="Z" { "Z" }
         }
     }
 }
