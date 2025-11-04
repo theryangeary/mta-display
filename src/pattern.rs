@@ -56,66 +56,162 @@ pub fn pattern_for_train(train: Train) -> BulbDisplay {
 
 fn one_train_bullet_pattern() -> BulbDisplay {
     let pattern = vec![
-        vec![ B0, B0, B0, B0, B0, RD, RD, W1, W1, RD, RD, B0, B0, B0, B0, B0, ],
-        vec![ B0, B0, B0, RD, RD, RD, W1, W1, W1, RD, RD, RD, RD, B0, B0, B0, ],
-        vec![ B0, B0, RD, RD, RD, W1, W1, W1, W1, RD, RD, RD, RD, RD, B0, B0, ],
-        vec![ B0, RD, RD, RD, W1, W1, RD, W1, W1, RD, RD, RD, RD, RD, RD, B0, ],
-        vec![ B0, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, B0, ],
-        vec![ RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, ],
-        vec![ RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, ],
-        vec![ RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, ],
-        vec![ RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, ],
-        vec![ RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, ],
-        vec![ RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, ],
-        vec![ B0, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, B0, ],
-        vec![ B0, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, B0, ],
-        vec![ B0, B0, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, B0, B0, ],
-        vec![ B0, B0, B0, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, B0, B0, B0, ],
-        vec![ B0, B0, B0, B0, B0, RD, RD, W1, W1, RD, RD, B0, B0, B0, B0, B0, ],
+        vec![
+            B0, B0, B0, B0, B0, RD, RD, W1, W1, RD, RD, B0, B0, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, RD, RD, RD, W1, W1, W1, RD, RD, RD, RD, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, RD, RD, RD, W1, W1, W1, W1, RD, RD, RD, RD, RD, B0, B0,
+        ],
+        vec![
+            B0, RD, RD, RD, W1, W1, RD, W1, W1, RD, RD, RD, RD, RD, RD, B0,
+        ],
+        vec![
+            B0, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, B0,
+        ],
+        vec![
+            RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD,
+        ],
+        vec![
+            RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD,
+        ],
+        vec![
+            RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD,
+        ],
+        vec![
+            RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD,
+        ],
+        vec![
+            RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD,
+        ],
+        vec![
+            RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD,
+        ],
+        vec![
+            B0, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, B0,
+        ],
+        vec![
+            B0, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, B0,
+        ],
+        vec![
+            B0, B0, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, B0, B0, RD, RD, W1, W1, RD, RD, B0, B0, B0, B0, B0,
+        ],
     ];
     pattern
 }
 
 fn two_train_bullet_pattern() -> BulbDisplay {
     let pattern = vec![
-        vec![ B0, B0, B0, B0, B0, RD, RD, RD, RD, RD, RD, B0, B0, B0, B0, B0, ], 
-        vec![ B0, B0, B0, RD, RD, RD, W1, W1, W1, W1, RD, RD, RD, B0, B0, B0, ],
-        vec![ B0, B0, RD, RD, RD, W1, W1, W1, W1, W1, W1, RD, RD, RD, B0, B0, ],
-        vec![ B0, RD, RD, RD, W1, W1, RD, RD, RD, RD, W1, W1, RD, RD, RD, B0, ],
-        vec![ B0, RD, RD, RD, W1, W1, RD, RD, RD, RD, W1, W1, RD, RD, RD, B0, ],
-        vec![ RD, RD, RD, RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, ],
-        vec![ RD, RD, RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, ],
-        vec![ RD, RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, ],
-        vec![ RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, ], 
-        vec![ RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, RD, ], 
-        vec![ RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, RD, RD, ],
-        vec![ B0, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, RD, RD, B0, ],
-        vec![ B0, RD, RD, RD, W1, W1, W1, W1, W1, W1, W1, W1, RD, RD, RD, B0, ],
-        vec![ B0, B0, RD, RD, W1, W1, W1, W1, W1, W1, W1, W1, RD, RD, B0, B0, ],
-        vec![ B0, B0, B0, RD, RD, RD, RD, RD, RD, RD, RD, RD, RD, B0, B0, B0, ],
-        vec![ B0, B0, B0, B0, B0, RD, RD, RD, RD, RD, RD, B0, B0, B0, B0, B0, ],
+        vec![
+            B0, B0, B0, B0, B0, RD, RD, RD, RD, RD, RD, B0, B0, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, RD, RD, RD, W1, W1, W1, W1, RD, RD, RD, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, RD, RD, RD, W1, W1, W1, W1, W1, W1, RD, RD, RD, B0, B0,
+        ],
+        vec![
+            B0, RD, RD, RD, W1, W1, RD, RD, RD, RD, W1, W1, RD, RD, RD, B0,
+        ],
+        vec![
+            B0, RD, RD, RD, W1, W1, RD, RD, RD, RD, W1, W1, RD, RD, RD, B0,
+        ],
+        vec![
+            RD, RD, RD, RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD,
+        ],
+        vec![
+            RD, RD, RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD,
+        ],
+        vec![
+            RD, RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD,
+        ],
+        vec![
+            RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD,
+        ],
+        vec![
+            RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, RD,
+        ],
+        vec![
+            RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, RD, RD,
+        ],
+        vec![
+            B0, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, RD, RD, RD, B0,
+        ],
+        vec![
+            B0, RD, RD, RD, W1, W1, W1, W1, W1, W1, W1, W1, RD, RD, RD, B0,
+        ],
+        vec![
+            B0, B0, RD, RD, W1, W1, W1, W1, W1, W1, W1, W1, RD, RD, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, RD, RD, RD, RD, RD, RD, RD, RD, RD, RD, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, B0, B0, RD, RD, RD, RD, RD, RD, B0, B0, B0, B0, B0,
+        ],
     ];
     pattern
 }
 
 fn three_train_bullet_pattern() -> BulbDisplay {
     let pattern = vec![
-        vec![ B0, B0, B0, B0, B0, RD, RD, RD, RD, RD, RD, B0, B0, B0, B0, B0, ],
-        vec![ B0, B0, B0, RD, RD, RD, W1, W1, W1, RD, RD, RD, RD, B0, B0, B0, ],
-        vec![ B0, B0, RD, RD, RD, W1, W1, W1, W1, W1, RD, RD, RD, RD, B0, B0, ],
-        vec![ B0, RD, RD, RD, W1, W1, RD, RD, RD, W1, W1, RD, RD, RD, RD, B0, ],
-        vec![ B0, RD, RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, B0, ],
-        vec![ RD, RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD, ],
-        vec![ RD, RD, RD, RD, RD, RD, W1, W1, W1, RD, RD, RD, RD, RD, RD, RD, ],
-        vec![ RD, RD, RD, RD, RD, RD, RD, W1, W1, W1, RD, RD, RD, RD, RD, RD, ],
-        vec![ RD, RD, RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, ],
-        vec![ RD, RD, RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, ],
-        vec![ RD, RD, RD, RD, W1, W1, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, ],
-        vec![ B0, RD, RD, RD, W1, W1, W1, W1, W1, W1, RD, RD, RD, RD, RD, B0, ],
-        vec![ B0, RD, RD, RD, RD, W1, W1, W1, W1, RD, RD, RD, RD, RD, RD, B0, ],
-        vec![ B0, B0, RD, RD, RD, RD, RD, RD, RD, RD, RD, RD, RD, RD, B0, B0, ],
-        vec![ B0, B0, B0, RD, RD, RD, RD, RD, RD, RD, RD, RD, RD, B0, B0, B0, ],
-        vec![ B0, B0, B0, B0, B0, RD, RD, RD, RD, RD, RD, B0, B0, B0, B0, B0, ],
+        vec![
+            B0, B0, B0, B0, B0, RD, RD, RD, RD, RD, RD, B0, B0, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, RD, RD, RD, W1, W1, W1, W1, RD, RD, RD, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, RD, RD, RD, W1, W1, W1, W1, W1, W1, RD, RD, RD, B0, B0,
+        ],
+        vec![
+            B0, RD, RD, RD, W1, W1, RD, RD, RD, RD, W1, W1, RD, RD, RD, B0,
+        ],
+        vec![
+            B0, RD, RD, RD, W1, W1, RD, RD, RD, RD, W1, W1, RD, RD, RD, B0,
+        ],
+        vec![
+            RD, RD, RD, RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD,
+        ],
+        vec![
+            RD, RD, RD, RD, RD, RD, RD, RD, RD, RD, W1, RD, RD, RD, RD, RD,
+        ],
+        vec![
+            RD, RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD,
+        ],
+        vec![
+            RD, RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD, RD, RD,
+        ],
+        vec![
+            RD, RD, RD, RD, RD, RD, RD, RD, RD, RD, W1, RD, RD, RD, RD, RD,
+        ],
+        vec![
+            RD, RD, RD, RD, RD, RD, RD, RD, RD, RD, W1, W1, RD, RD, RD, RD,
+        ],
+        vec![
+            B0, RD, RD, RD, W1, W1, RD, RD, RD, RD, W1, W1, RD, RD, RD, B0,
+        ],
+        vec![
+            B0, RD, RD, RD, W1, W1, RD, RD, RD, RD, W1, W1, RD, RD, RD, B0,
+        ],
+        vec![
+            B0, B0, RD, RD, RD, W1, W1, W1, W1, W1, W1, RD, RD, RD, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, RD, RD, RD, W1, W1, W1, W1, RD, RD, RD, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, B0, B0, RD, RD, RD, RD, RD, RD, B0, B0, B0, B0, B0,
+        ],
     ];
     pattern
 }
