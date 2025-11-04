@@ -758,22 +758,54 @@ fn f_train_bullet_pattern() -> BulbDisplay {
 
 fn g_train_bullet_pattern() -> BulbDisplay {
     let pattern = vec![
-        vec![ B0, B0, B0, B0, B0, LG, LG, LG, LG, LG, LG, B0, B0, B0, B0, B0, ],
-        vec![ B0, B0, B0, LG, LG, LG, W1, W1, W1, LG, LG, LG, LG, B0, B0, B0, ],
-        vec![ B0, B0, LG, LG, LG, W1, W1, W1, W1, W1, LG, LG, LG, LG, B0, B0, ],
-        vec![ B0, LG, LG, LG, W1, W1, LG, LG, LG, W1, W1, LG, LG, LG, LG, B0, ],
-        vec![ B0, LG, LG, LG, W1, W1, LG, LG, LG, LG, LG, LG, LG, LG, LG, B0, ],
-        vec![ LG, LG, LG, W1, W1, LG, LG, LG, LG, LG, LG, LG, LG, LG, LG, LG, ],
-        vec![ LG, LG, LG, W1, W1, LG, LG, LG, LG, LG, LG, LG, LG, LG, LG, LG, ],
-        vec![ LG, LG, LG, W1, W1, LG, LG, W1, W1, W1, W1, LG, LG, LG, LG, LG, ],
-        vec![ LG, LG, LG, W1, W1, LG, LG, LG, LG, W1, W1, LG, LG, LG, LG, LG, ],
-        vec![ LG, LG, LG, W1, W1, LG, LG, LG, LG, W1, W1, LG, LG, LG, LG, LG, ],
-        vec![ LG, LG, LG, W1, W1, LG, LG, LG, LG, W1, W1, LG, LG, LG, LG, LG, ],
-        vec![ B0, LG, LG, LG, W1, W1, LG, LG, LG, W1, W1, LG, LG, LG, LG, B0, ],
-        vec![ B0, LG, LG, LG, W1, W1, W1, W1, W1, W1, LG, LG, LG, LG, LG, B0, ],
-        vec![ B0, B0, LG, LG, LG, W1, W1, W1, W1, LG, LG, LG, LG, LG, B0, B0, ],
-        vec![ B0, B0, B0, LG, LG, LG, LG, LG, LG, LG, LG, LG, LG, B0, B0, B0, ],
-        vec![ B0, B0, B0, B0, B0, LG, LG, LG, LG, LG, LG, B0, B0, B0, B0, B0, ],
+        vec![
+            B0, B0, B0, B0, B0, LG, LG, LG, LG, LG, LG, B0, B0, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, LG, LG, LG, W1, W1, W1, W1, LG, LG, LG, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, LG, LG, LG, W1, W1, W1, W1, W1, W1, LG, LG, LG, B0, B0,
+        ],
+        vec![
+            B0, LG, LG, LG, W1, W1, LG, LG, LG, LG, W1, W1, LG, LG, LG, B0,
+        ],
+        vec![
+            B0, LG, LG, LG, W1, W1, LG, LG, LG, LG, W1, W1, LG, LG, LG, B0,
+        ],
+        vec![
+            LG, LG, LG, W1, W1, LG, LG, LG, LG, LG, LG, LG, LG, LG, LG, LG,
+        ],
+        vec![
+            LG, LG, LG, W1, W1, LG, LG, LG, LG, LG, LG, LG, LG, LG, LG, LG,
+        ],
+        vec![
+            LG, LG, LG, W1, W1, LG, LG, LG, LG, LG, LG, LG, LG, LG, LG, LG,
+        ],
+        vec![
+            LG, LG, LG, W1, W1, LG, LG, LG, LG, W1, W1, W1, LG, LG, LG, LG,
+        ],
+        vec![
+            LG, LG, LG, W1, W1, LG, LG, LG, LG, W1, W1, W1, LG, LG, LG, LG,
+        ],
+        vec![
+            LG, LG, LG, W1, W1, LG, LG, LG, LG, LG, W1, W1, LG, LG, LG, LG,
+        ],
+        vec![
+            B0, LG, LG, LG, W1, W1, LG, LG, LG, LG, W1, W1, LG, LG, LG, B0,
+        ],
+        vec![
+            B0, LG, LG, LG, W1, W1, LG, LG, LG, LG, W1, W1, LG, LG, LG, B0,
+        ],
+        vec![
+            B0, B0, LG, LG, LG, W1, W1, W1, W1, W1, W1, LG, LG, LG, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, LG, LG, LG, W1, W1, W1, W1, LG, LG, LG, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, B0, B0, LG, LG, LG, LG, LG, LG, B0, B0, B0, B0, B0,
+        ],
     ];
     pattern
 }
