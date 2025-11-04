@@ -488,18 +488,54 @@ fn a_train_bullet_pattern() -> BulbDisplay {
 
 fn b_train_bullet_pattern() -> BulbDisplay {
     let pattern = vec![
-        vec![ B0, B0, B0, B0, B0, OR, OR, OR, OR, OR, OR, B0, B0, B0, B0, B0, ],
-        vec![ B0, B0, B0, OR, OR, OR, OR, OR, OR, OR, OR, OR, OR, B0, B0, B0, ],
-        vec![ B0, B0, OR, OR, W1, W1, W1, W1, W1, W1, OR, OR, OR, OR, B0, B0, ],
-        vec![ B0, OR, OR, OR, W1, W1, W1, W1, W1, W1, W1, OR, OR, OR, OR, B0, ],
-        vec![ B0, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, B0, ],
-        vec![ OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, ],
-        vec![ OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, ],
-        vec![ B0, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, B0, ],
-        vec![ B0, OR, OR, OR, W1, W1, W1, W1, W1, W1, W1, OR, OR, OR, OR, B0, ],
-        vec![ B0, B0, OR, OR, OR, W1, W1, W1, W1, W1, OR, OR, OR, OR, B0, B0, ],
-        vec![ B0, B0, B0, OR, OR, OR, OR, OR, OR, OR, OR, OR, OR, B0, B0, B0, ],
-        vec![ B0, B0, B0, B0, B0, OR, OR, OR, OR, OR, OR, B0, B0, B0, B0, B0, ],
+        vec![
+            B0, B0, B0, B0, B0, OR, OR, OR, OR, OR, OR, B0, B0, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, OR, OR, OR, OR, OR, OR, OR, OR, OR, OR, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, OR, OR, W1, W1, W1, W1, W1, W1, OR, OR, OR, OR, B0, B0,
+        ],
+        vec![
+            B0, OR, OR, OR, W1, W1, W1, W1, W1, W1, W1, OR, OR, OR, OR, B0,
+        ],
+        vec![
+            B0, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, B0,
+        ],
+        vec![
+            OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, OR,
+        ],
+        vec![
+            OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, OR, OR, OR, OR, OR,
+        ],
+        vec![
+            OR, OR, OR, OR, W1, W1, W1, W1, W1, W1, OR, OR, OR, OR, OR, OR,
+        ],
+        vec![
+            OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, OR, OR, OR, OR, OR,
+        ],
+        vec![
+            OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, OR,
+        ],
+        vec![
+            OR, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, OR,
+        ],
+        vec![
+            B0, OR, OR, OR, W1, W1, OR, OR, OR, OR, W1, W1, OR, OR, OR, B0,
+        ],
+        vec![
+            B0, OR, OR, OR, W1, W1, W1, W1, W1, W1, W1, W1, OR, OR, OR, B0,
+        ],
+        vec![
+            B0, B0, OR, OR, OR, W1, W1, W1, W1, W1, W1, OR, OR, OR, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, OR, OR, OR, OR, OR, OR, OR, OR, OR, OR, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, B0, B0, OR, OR, OR, OR, OR, OR, B0, B0, B0, B0, B0,
+        ],
     ];
     pattern
 }
