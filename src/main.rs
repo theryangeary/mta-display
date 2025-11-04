@@ -660,8 +660,12 @@ async fn get_index_markup(Query(params): Query<HashMap<String, String>>) -> Mark
                         button type="submit" class=" bg-yellow-500 text-black font-bold py-2 px-4 rounded hover:bg-yellow-600 " { "Generate" }
                     }
 
+                    h2 { "Gallery" }
+                    p class="prose" { "Check out the " a class="underline underline-offset-2 hover:decoration-2" href="/gallery" { "gallery" } " to see submissions from other users, or submit your own!" }
+
                     h2 { "About"}
-                    p class="prose" { "This is a fun side project that generates GIFs that simulate a display as you would see on the New York City MTA Subway." }
+                    p class="prose" { "This is a fun side project that generates GIFs that simulate a display as you would see on the New York City MTA Subway. It is modeled after the displays inside the newest Subway cars." }
+                    img src="/static/irlexample.png" alt="Example of an MTA Subway display inside a subway car" class="h-auto max-w-full my-4";
                     p class="prose" {
                         "If you enjoy this, please consider "
                         a class="underline underline-offset-2 hover:decoration-2" href="https://github.com/theryangeary/mta-display/issues" {
