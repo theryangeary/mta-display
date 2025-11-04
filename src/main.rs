@@ -1,4 +1,4 @@
-use axum::routing::post;
+use axum::routing::{post, put, delete};
 use gif::{Encoder, Frame, Repeat};
 use image::{ImageBuffer, Rgb};
 use rust_embed::Embed;
@@ -56,6 +56,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/gallery", get(get_gallery))
         .route("/gallery/entry", get(get_gallery_entry))
         .route("/gallery/entry", post(post_gallery_entry))
+        .route("/gallery/review", get(get_gallery_review))
+        .route("/gallery/review/{id}/approve", put(put_gallery_review_approve))
+        .route("/gallery/review/{id}/reject", delete(put_gallery_review_reject))
         .layer(TraceLayer::new_for_http())
         .with_state(db);
 
@@ -275,6 +278,105 @@ async fn post_gallery_entry(
     let markup = get_gallery_with_banner_markup(State(db)).await?;
 
     Ok((headers, markup).into_response())
+}
+
+async fn get_gallery_review(
+    State(db): State<Arc<dyn Database>>,
+) -> Result<Markup, StatusCode> {
+    let entries = db.list_pending_gallery_entries().await.map_err(|e| {
+        tracing::error!("failed to get gallery entries: {}", e);
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+
+    Ok(get_gallery_review_markup(entries))
+}
+
+fn get_gallery_review_markup(entries: Vec<GalleryEntry>) -> Markup {
+    html! {
+        (head("Gallery Review"))
+        body {
+            div class=" flex justify-center " {
+                div
+                    class="
+                    grid content-center
+                    max-w-4xl
+                    mx-4
+                    "
+                {
+                    h1 { a href="/gallery" { "Gallery Review" } }
+
+                    @for entry in entries {
+                        @let i = format!("gallery-entry-{}", entry.id);
+                        div id=(i) class=" mb-8 " {
+                            div class=" flex justify-center mb-1 " {
+                                img
+                                    src=(&format!("/gif/sm/{}/{}", entry.train, urlencoding::encode(&entry.message)))
+                                    alt=(&format!("Generated MTA Display with message {}", entry.message))
+                                    class="h-auto max-w-full"
+                                ;
+                            }
+
+                            @if let Some(desc) = &entry.description {
+                                p class=" prose prose-sm mx-auto mb-2 " {
+                                    (desc)
+                                }
+                            }
+
+                            p class=" text-center text-sm text-gray-600 mb-2 " {
+                                "Submitted by "
+                                span class=" font-bold " {
+                                    @if entry.submitter_name.is_some() && !entry.submitter_name.as_ref().unwrap().is_empty() {
+                                        (entry.submitter_name.as_ref().unwrap())
+                                    } @else {
+                                        "anonymous"
+                                    }
+                                }
+                                " on "
+                                (entry.submitted_at.format("%Y-%m-%d"))
+                            }
+                            div class=" flex justify-center space-x-4 " {
+                                button
+                                    hx-put=(format!("/gallery/review/{}/approve", entry.id))
+                                    hx-target=(format!("#{}", i))
+                                    class=" bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600 "
+                                { "Approve" }
+
+                                button
+                                    hx-delete=(format!("/gallery/review/{}/reject", entry.id))
+                                    hx-target=(format!("#{}", i))
+                                    class=" bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600 "
+                                { "Reject" }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+async fn put_gallery_review_approve(
+    State(db): State<Arc<dyn Database>>,
+    Path(id): Path<i64>,
+) -> Result<Markup, StatusCode> {
+    db.approve_gallery_entry(id).await.map_err(|e| {
+        tracing::error!("failed to approve gallery entry {}: {}", id, e);
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+
+    Ok(html!{div{}})
+}
+
+async fn put_gallery_review_reject(
+    State(db): State<Arc<dyn Database>>,
+    Path(id): Path<i64>,
+) -> Result<Markup, StatusCode> {
+    db.reject_gallery_entry(id).await.map_err(|e| {
+        tracing::error!("failed to reject gallery entry {}: {}", id, e);
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+
+    Ok(html!{div{}})
 }
 
 async fn get_gallery(State(db): State<Arc<dyn Database>>) -> Result<Markup, StatusCode> {

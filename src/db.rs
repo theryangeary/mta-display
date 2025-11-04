@@ -21,6 +21,8 @@ pub trait Database: Send + Sync {
 
     async fn approve_gallery_entry(&self, entry_id: i64) -> Result<()>;
 
+    async fn reject_gallery_entry(&self, entry_id: i64) -> Result<()>;
+
     async fn list_pending_gallery_entries(&self) -> Result<Vec<GalleryEntry>>;
 
     async fn list_approved_gallery_entries(&self) -> Result<Vec<GalleryEntry>>;
@@ -77,6 +79,15 @@ impl Database for SqliteDatabase {
 
     async fn approve_gallery_entry(&self, entry_id: i64) -> Result<()> {
         sqlx::query("UPDATE gallery_entries SET approved_at = CURRENT_TIMESTAMP WHERE id = ?")
+            .bind(entry_id)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(())
+    }
+
+    async fn reject_gallery_entry(&self, entry_id: i64) -> Result<()> {
+        sqlx::query("DELETE FROM gallery_entries WHERE id = ?")
             .bind(entry_id)
             .execute(&self.pool)
             .await?;
