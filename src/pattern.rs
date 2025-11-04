@@ -380,22 +380,54 @@ fn six_train_bullet_pattern() -> BulbDisplay {
 
 fn seven_train_bullet_pattern() -> BulbDisplay {
     let pattern = vec![
-        vec![ B0, B0, B0, B0, B0, PU, PU, PU, PU, PU, PU, B0, B0, B0, B0, B0, ],
-        vec![ B0, B0, B0, PU, PU, PU, PU, PU, PU, PU, PU, PU, PU, B0, B0, B0, ],
-        vec![ B0, B0, PU, PU, W1, W1, W1, W1, W1, W1, W1, W1, PU, PU, B0, B0, ],
-        vec![ B0, PU, PU, PU, W1, W1, W1, W1, W1, W1, W1, W1, PU, PU, PU, B0, ],
-        vec![ B0, PU, PU, PU, PU, PU, PU, PU, PU, W1, W1, PU, PU, PU, PU, B0, ],
-        vec![ PU, PU, PU, PU, PU, PU, PU, PU, W1, W1, PU, PU, PU, PU, PU, PU, ],
-        vec![ PU, PU, PU, PU, PU, PU, PU, W1, W1, PU, PU, PU, PU, PU, PU, PU, ],
-        vec![ PU, PU, PU, PU, PU, PU, W1, W1, PU, PU, PU, PU, PU, PU, PU, PU, ],
-        vec![ PU, PU, PU, PU, PU, W1, W1, PU, PU, PU, PU, PU, PU, PU, PU, PU, ],
-        vec![ PU, PU, PU, PU, W1, W1, PU, PU, PU, PU, PU, PU, PU, PU, PU, PU, ],
-        vec![ PU, PU, PU, W1, W1, PU, PU, PU, PU, PU, PU, PU, PU, PU, PU, PU, ],
-        vec![ B0, PU, PU, W1, W1, PU, PU, PU, PU, PU, PU, PU, PU, PU, PU, B0, ],
-        vec![ B0, PU, PU, W1, W1, PU, PU, PU, PU, PU, PU, PU, PU, PU, PU, B0, ],
-        vec![ B0, B0, PU, PU, PU, PU, PU, PU, PU, PU, PU, PU, PU, PU, B0, B0, ],
-        vec![ B0, B0, B0, PU, PU, PU, PU, PU, PU, PU, PU, PU, PU, B0, B0, B0, ],
-        vec![ B0, B0, B0, B0, B0, PU, PU, PU, PU, PU, PU, B0, B0, B0, B0, B0, ],
+        vec![
+            B0, B0, B0, B0, B0, PU, PU, PU, PU, PU, PU, B0, B0, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, PU, PU, PU, PU, PU, PU, PU, PU, PU, PU, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, PU, PU, PU, PU, PU, PU, PU, PU, PU, PU, PU, PU, B0, B0,
+        ],
+        vec![
+            B0, PU, PU, PU, W1, W1, W1, W1, W1, W1, W1, W1, PU, PU, PU, B0,
+        ],
+        vec![
+            B0, PU, PU, PU, W1, W1, W1, W1, W1, W1, W1, W1, PU, PU, PU, B0,
+        ],
+        vec![
+            PU, PU, PU, PU, PU, PU, PU, PU, PU, PU, W1, W1, PU, PU, PU, PU,
+        ],
+        vec![
+            PU, PU, PU, PU, PU, PU, PU, PU, PU, W1, W1, PU, PU, PU, PU, PU,
+        ],
+        vec![
+            PU, PU, PU, PU, PU, PU, PU, PU, W1, W1, PU, PU, PU, PU, PU, PU,
+        ],
+        vec![
+            PU, PU, PU, PU, PU, PU, PU, W1, W1, PU, PU, PU, PU, PU, PU, PU,
+        ],
+        vec![
+            PU, PU, PU, PU, PU, PU, W1, W1, PU, PU, PU, PU, PU, PU, PU, PU,
+        ],
+        vec![
+            PU, PU, PU, PU, PU, W1, W1, PU, PU, PU, PU, PU, PU, PU, PU, PU,
+        ],
+        vec![
+            B0, PU, PU, PU, W1, W1, PU, PU, PU, PU, PU, PU, PU, PU, PU, B0,
+        ],
+        vec![
+            B0, PU, PU, PU, W1, PU, PU, PU, PU, PU, PU, PU, PU, PU, PU, B0,
+        ],
+        vec![
+            B0, B0, PU, PU, PU, PU, PU, PU, PU, PU, PU, PU, PU, PU, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, PU, PU, PU, PU, PU, PU, PU, PU, PU, PU, B0, B0, B0,
+        ],
+        vec![
+            B0, B0, B0, B0, B0, PU, PU, PU, PU, PU, PU, B0, B0, B0, B0, B0,
+        ],
     ];
     pattern
 }
