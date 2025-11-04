@@ -3,13 +3,15 @@ use gif::{Encoder, Frame, Repeat};
 use image::{ImageBuffer, Rgb};
 use rust_embed::Embed;
 use std::collections::HashMap;
+use std::env;
 use std::error::Error;
 use std::fs::File;
 use std::str::FromStr;
 
 use std::io::Write;
+use std::sync::Arc;
 
-use axum::extract::{Path, Query};
+use axum::extract::{Path, Query, State};
 use axum::http::{HeaderMap, HeaderValue, StatusCode, header};
 use axum::response::{IntoResponse, Response};
 use axum::{Form, Json};
@@ -20,12 +22,16 @@ use tokio::signal;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+mod db;
 mod pattern;
+mod models;
 mod types;
 use types::BulbDisplay;
 use types::BulbDisplayConfig;
 
+use crate::db::{Database, SqliteDatabase};
 use crate::types::{BulbDisplaySize, Train};
+use crate::models::GalleryEntry;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -38,13 +44,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
+    let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite:gallery.db".to_string());
+    let db = Arc::new(SqliteDatabase::new(&database_url).await?);
+
     let app = Router::new()
         .route("/", get(get_index_markup))
         .route("/health", get(health_check))
         .route("/static/{file}", get(get_static_file))
         .route("/generate", post(post_generate))
         .route("/gif/{size}/{train}/{message}", get(get_gif_file))
-        .layer(TraceLayer::new_for_http());
+        .route("/gallery", get(get_gallery))
+        .route("/gallery/entry", get(get_gallery_entry))
+        .route("/gallery/entry", post(post_gallery_entry))
+        .layer(TraceLayer::new_for_http())
+        .with_state(db);
 
     // Run it on localhost:3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
@@ -133,6 +146,197 @@ fn head(title: &str) -> Markup {
     }
 }
 
+async fn get_gallery_entry() -> Markup {
+    get_gallery_entry_markup()
+}
+
+fn get_gallery_entry_markup() -> Markup {
+    html! {
+        (head("Create Gallery Entry"))
+        body {
+            div class=" flex justify-center " {
+                div
+                    class="
+                    grid content-center
+                    max-w-4xl
+                    mx-4
+                    "
+                {
+                    h1 { a href="/gallery" { "Submit to Gallery" } }
+
+                    form
+                        hx-post="/gallery/entry"
+                        class="bg-gray-200 border-gray-300 p-4 rounded-xl mb-4"
+                    {
+                        label class="flex w-100% block mb-2" for="message" {
+                            span class="flex-grow" { "Message: " }
+                            span class="flex-shrink relative group" {
+                                button type="button"
+                                    class="cursor-pointer focus:outline-none "
+                                    onclick="this.nextElementSibling.classList.toggle('hidden')"
+                                {
+                                    "ⓘ"
+                                }
+
+                                span class=" absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 -left-50 top-full mb-1 z-10 whitespace-nowrap " {
+                                    p class="mb-1" {"Max 6 rows, 14 characters per row. "}
+                                    p class="mb-1" {"Use linebreaks to separate pages manually. "}
+                                    p class="mb-1" {"Unsupported characters will be ignored." }
+                                }
+                            }
+                        }
+                        textarea
+                            class=" w-full p-2 mt-2 mb-4 bg-white border border-gray-600 rounded-lg text-black focus:outline-none focus:border-blue-500"
+                            name="message"
+                            id="message"
+                            rows="4"
+                            placeholder="Type your message here..." {}
+                        br;
+
+                        label class=" flex w-100% block mb-2" for="train" {
+                            span class="flex-grow" { "Train: " }
+                            // todo layout all bullets in a grid for selection
+                            select
+                                name="train"
+                                id="train"
+                                class=" ml-2 p-2 bg-white border border-gray-600 rounded-lg text-black focus:outline-none focus:border-blue-500 "
+                            {
+                                option value="One" { "1" }
+                                option value="Two" { "2" }
+                                option value="Three" { "3" }
+                                option value="Four" { "4" }
+                                option value="Five" { "5" }
+                                option value="Six" { "6" }
+                            }
+                        }
+
+                        label class=" flex w-100% block mb-2" for="submitter_name" {
+                            span class="flex-grow" { "Your Name (optional): " }
+                            input
+                                type="text"
+                                name="submitter_name"
+                                id="submitter_name"
+                                class=" ml-2 p-2 bg-white border border-gray-600 rounded-lg text-black focus:outline-none focus:border-blue-500 "
+                            ;
+                        }
+
+                        label class=" flex w-100% block mb-2" for="description" {
+                            span class="flex-grow" { "Caption (optional): " }
+                            textarea
+                                class=" w-full p-2 mt-2 mb-4 bg-white border border-gray-600 rounded-lg text-black focus:outline-none focus:border-blue-500"
+                                name="description"
+                                id="description"
+                                rows="4"
+                                placeholder="Caption your submission..." {}
+                        }
+
+                        button type="submit" class=" bg-yellow-500 text-black font-bold py-2 px-4 rounded hover:bg-yellow-600 " { "Submit to Gallery" }
+                    }
+                }
+            }   
+        }
+    }
+}
+
+#[derive(Deserialize, Debug)]
+struct GalleryEntryForm {
+    message: String,
+    train: Train,
+    submitter_name: Option<String>,
+    description: Option<String>,
+}
+
+async fn post_gallery_entry(
+    State(db): State<Arc<dyn Database>>,
+    Form(gallery_entry_form): Form<GalleryEntryForm>,
+) -> Result<Response, StatusCode> {
+    let message = gallery_entry_form.message;
+    let train_str = gallery_entry_form.train;
+    let submitter_name = gallery_entry_form.submitter_name;
+    let description = gallery_entry_form.description;
+
+    db.create_gallery_entry(
+        &message,
+        train_str,
+        submitter_name.as_deref(),
+        description.as_deref(),
+    )
+    .await
+    .map_err(|e| {
+        tracing::error!("failed to create gallery entry: {}", e);
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+
+    let mut headers = HeaderMap::new();
+    headers.insert(header::CONTENT_TYPE, HeaderValue::from_static("text/html"));
+    headers.insert("hx-redirect", "/gallery".parse().unwrap());
+
+    Ok((StatusCode::CREATED, headers).into_response())
+}
+
+async fn get_gallery(
+    State(db): State<Arc<dyn Database>>,
+) -> Result<Markup, StatusCode> {
+    let entries = db.list_approved_gallery_entries().await.map_err(|e| {
+        tracing::error!("failed to get gallery entries: {}", e);
+        StatusCode::INTERNAL_SERVER_ERROR
+    })?;
+
+    Ok(get_gallery_markup(entries))
+}
+
+fn get_gallery_markup(entries: Vec<GalleryEntry>) -> Markup {
+    html! {
+        (head("Gallery"))
+        body {
+            div class=" flex justify-center " {
+                div
+                    class="
+                    grid content-center
+                    max-w-4xl
+                    mx-4
+                    "
+                {
+                    h1 { a href="/" { "Gallery" } }
+
+                    @for entry in entries {
+                        div class=" mb-8 " {
+                            div class=" flex justify-center mb-1 " {
+                                img
+                                    src=(&format!("/gif/sm/{}/{}", entry.train, urlencoding::encode(&entry.message)))
+                                    alt=(&format!("Generated MTA Display with message {}", entry.message))
+                                    class="h-auto max-w-full"
+                                ;
+                            }
+
+                            @if let Some(desc) = &entry.description {
+                                p class=" prose prose-sm mx-auto mb-2 " {
+                                    (desc)
+                                }
+                            }
+
+                            p class=" text-center text-sm text-gray-600 mb-2 " {
+                                "Submitted by "
+                                span class=" font-bold " {
+                                    @if entry.submitter_name.is_some() && !entry.submitter_name.as_ref().unwrap().is_empty() {
+                                        (entry.submitter_name.as_ref().unwrap())
+                                    } @else {
+                                        "anonymous"
+                                    }
+                                }
+                                " on "
+                                (entry.submitted_at.format("%Y-%m-%d"))
+                            }
+
+                            
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 #[derive(Deserialize, Debug)]
 struct GenerateGifForm {
     message: String,
@@ -148,9 +352,12 @@ async fn post_generate(
         "/?message={}&train={}",
         encoded_message, &generate_gif_form.train
     );
-    let url = HeaderValue::from_str(&header_input)
-    .map_err(|e| {
-        tracing::error!("failed to turn message param into push-url: {}. HeaderValue input: {}", e, header_input);
+    let url = HeaderValue::from_str(&header_input).map_err(|e| {
+        tracing::error!(
+            "failed to turn message param into push-url: {}. HeaderValue input: {}",
+            e,
+            header_input
+        );
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
 
@@ -169,7 +376,7 @@ fn gif_markup(train: Train, message: &str) -> Markup {
     let url_encoded_message = urlencoding::encode(message);
     html! {
         div id="mta-sign-gif" {
-            div 
+            div
                 class=" flex justify-center mb-4 "
             {
                 img
@@ -179,7 +386,7 @@ fn gif_markup(train: Train, message: &str) -> Markup {
                 ;
             }
 
-            div class=" mb-8 flex justify-center " {            
+            div class=" mb-8 flex justify-center " {
                 div class=" divide-x-1 divide-yellow-700 rounded-xl " {
                     button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 rounded-l-xl" { a target="_blank" href=(format!("/gif/sm/{}/{}", train, url_encoded_message)) { "Small" } }
                     button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 " { a target="_blank" href=(format!("/gif/md/{}/{}", train, url_encoded_message)) { "Medium" } }
@@ -554,7 +761,7 @@ mod tests {
         assert_eq!(parts[1], "message with");
         assert_eq!(parts[2], "newlines");
         assert_eq!(parts[3], "to split into");
-        assert_eq!(parts[4], "parts.");   
+        assert_eq!(parts[4], "parts.");
     }
 
     #[test]

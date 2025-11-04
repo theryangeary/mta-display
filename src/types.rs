@@ -1,4 +1,8 @@
+use std::str::FromStr;
+
 use image::Rgb;
+use serde::{Deserialize, Serialize};
+use sqlx::{Decode, Sqlite};
 
 use crate::pattern;
 
@@ -85,8 +89,9 @@ impl BulbDisplayConfig {
 }
 
 #[derive(
-    Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Deserialize, strum::EnumString, strum::Display,
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, strum::EnumString, strum::Display,
 )]
+#[derive(sqlx::Type)]
 pub enum Train {
     One,
     Two,
