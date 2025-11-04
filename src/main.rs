@@ -153,10 +153,25 @@ async fn get_gallery_entry() -> Markup {
     get_gallery_entry_markup()
 }
 
+fn navbar_markup() -> Markup {
+    html! {
+        nav class=" bg-gray-200 p-4 mb-4 " {
+            div class=" max-w-7xl mx-auto flex items-center justify-between " {
+                a href="/" class=" text-black font-bold text-lg " { "MTA Display Generator" }
+                div class=" space-x-4 " {
+                    a href="/" class=" text-black hover:text-green-500 " { "Home" }
+                    a href="/gallery" class=" text-black hover:text-green-500 " { "Gallery" }
+                }
+            }
+        }
+    }
+}
+
 fn get_gallery_entry_markup() -> Markup {
     html! {
         (head("Create Gallery Entry"))
         body {
+            (navbar_markup())
             div class=" flex justify-center " {
                 div
                     class="
@@ -283,6 +298,7 @@ fn get_gallery_review_markup(entries: Vec<GalleryEntry>) -> Markup {
     html! {
         (head("Gallery Review"))
         body {
+            (navbar_markup())
             div class=" flex justify-center " {
                 div
                     class="
@@ -402,6 +418,7 @@ fn get_gallery_markup(entries: Vec<GalleryEntry>, banner: Option<String>) -> Mar
     html! {
         (head("Gallery"))
         body {
+            (navbar_markup())
             div class=" flex justify-center " {
                 div
                     class="
@@ -564,6 +581,7 @@ async fn get_index_markup(Query(params): Query<HashMap<String, String>>) -> Mark
     html! {
         (head("MTA Display Generator"))
         body {
+            (navbar_markup())
             div class="flex justify-center" {
                 div
                     class="

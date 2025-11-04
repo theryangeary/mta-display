@@ -2,7 +2,7 @@
 
 @layer base {
   body {
-    @apply text-black font-sans p-4 items-center;
+    @apply text-black font-sans items-center;
   }
 
   h1 {
