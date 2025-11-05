@@ -1,4 +1,4 @@
-use axum::routing::{post, put, delete};
+use axum::routing::{delete, post, put};
 use gif::{Encoder, Frame, Repeat};
 use image::{ImageBuffer, Rgb};
 use rust_embed::Embed;
@@ -12,11 +12,11 @@ use std::io::Write;
 use std::sync::Arc;
 
 use axum::extract::{Path, Query, State};
-use axum::http::{HeaderMap, HeaderValue, StatusCode, header};
+use axum::http::{header, HeaderMap, HeaderValue, StatusCode};
 use axum::response::{IntoResponse, Response};
+use axum::{routing::get, Router};
 use axum::{Form, Json};
-use axum::{Router, routing::get};
-use maud::{DOCTYPE, Markup, html};
+use maud::{html, Markup, DOCTYPE};
 use serde::Deserialize;
 use tokio::signal;
 use tower_http::trace::TraceLayer;
@@ -59,8 +59,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/gallery/entry", get(get_gallery_entry))
         .route("/gallery/entry", post(post_gallery_entry))
         .route("/gallery/review", get(get_gallery_review))
-        .route("/gallery/review/{id}/approve", put(put_gallery_review_approve))
-        .route("/gallery/review/{id}/reject", delete(put_gallery_review_reject))
+        .route(
+            "/gallery/review/{id}/approve",
+            put(put_gallery_review_approve),
+        )
+        .route(
+            "/gallery/review/{id}/reject",
+            delete(put_gallery_review_reject),
+        )
         .layer(TraceLayer::new_for_http())
         .with_state(db);
 
@@ -285,9 +291,7 @@ async fn post_gallery_entry(
     Ok((headers, markup).into_response())
 }
 
-async fn get_gallery_review(
-    State(db): State<Arc<dyn Database>>,
-) -> Result<Markup, StatusCode> {
+async fn get_gallery_review(State(db): State<Arc<dyn Database>>) -> Result<Markup, StatusCode> {
     let entries = db.list_pending_gallery_entries().await.map_err(|e| {
         tracing::error!("failed to get gallery entries: {}", e);
         StatusCode::INTERNAL_SERVER_ERROR
@@ -370,7 +374,7 @@ async fn put_gallery_review_approve(
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
 
-    Ok(html!{div{}})
+    Ok(html! {div{}})
 }
 
 async fn put_gallery_review_reject(
@@ -382,7 +386,7 @@ async fn put_gallery_review_reject(
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
 
-    Ok(html!{div{}})
+    Ok(html! {div{}})
 }
 
 async fn get_gallery(State(db): State<Arc<dyn Database>>) -> Result<Markup, StatusCode> {
@@ -578,7 +582,13 @@ async fn get_gif_file(Path((size, train, message)): Path<(String, Train, String)
 async fn get_index_markup(Query(params): Query<HashMap<String, String>>) -> Markup {
     let display_message = params
         .get("message")
-        .map(|s| if s.is_empty() { DEFAULT_MESSAGE.into() } else { s.clone() })
+        .map(|s| {
+            if s.is_empty() {
+                DEFAULT_MESSAGE.into()
+            } else {
+                s.clone()
+            }
+        })
         .unwrap_or_else(|| DEFAULT_MESSAGE.into());
 
     let train = Train::from_str(&params.get("train").cloned().unwrap_or_else(|| "A".into()))
@@ -649,8 +659,26 @@ async fn get_index_markup(Query(params): Query<HashMap<String, String>>) -> Mark
                     p class="prose" { "Check out the " a class="underline underline-offset-2 hover:decoration-2" href="/gallery" { "gallery" } " to see submissions from other users, or submit your own!" }
 
                     h2 { "About"}
-                    p class="prose" { "This is a fun side project that generates GIFs that simulate a display as you would see on the New York City MTA Subway. It is modeled after the displays inside the newest Subway cars." }
+                    p class="prose" { r#"
+                        One day I was on the Subway, deep in thought, when I noticed the train car I was on had this
+                        display for captions of the announcements. At that moment it was conveying a message about
+                        how it is "# 
+                        span class="font-mono font-bold" {"unlawful to consume alcohol in the system"} 
+                        r#". The incongruity of the display that usually cycles through the time, destination, and next
+                        stops showing "#
+                        span class="font-mono font-bold" { r#""CONSUME" "ALCOHOL""# }
+                        r#" threw me - and that's when I started pondering showing
+                        arbitrary messages on those displays."# 
+                    }
+                    p class="prose" { r#"
+                        From this rabbit hole this fun side project that generates GIFs that simulate those same displays
+                        was born. It is modeled after the displays inside the newest Subway cars which have been around
+                        since 2023."# 
+                    }
                     img src="/static/irlexample.png" alt="Example of an MTA Subway display inside a subway car" class="h-auto max-w-full my-4";
+                    p class="prose" { r#"
+                        Send your friends a funny message or leave one for future visitors to see in the gallery."#
+                    }
                     p class="prose" {
                         "If you enjoy this, please consider "
                         a class="underline underline-offset-2 hover:decoration-2" href="https://github.com/theryangeary/mta-display/issues" {
