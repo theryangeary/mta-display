@@ -33,6 +33,8 @@ use crate::db::{Database, SqliteDatabase};
 use crate::models::GalleryEntry;
 use crate::types::{BulbDisplaySize, Train};
 
+const DEFAULT_MESSAGE: &str = "Welcome to the MTA display generator";
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize tracing
@@ -489,7 +491,11 @@ struct GenerateGifForm {
 async fn post_generate(
     Form(generate_gif_form): Form<GenerateGifForm>,
 ) -> Result<Response, StatusCode> {
-    let encoded_message = urlencoding::encode(&generate_gif_form.message);
+    let mut sanitized_message = generate_gif_form.message.trim().to_string();
+    if sanitized_message.is_empty() {
+        sanitized_message = DEFAULT_MESSAGE.into();
+    }
+    let encoded_message = urlencoding::encode(&sanitized_message);
     let header_input = format!(
         "/?message={}&train={}",
         encoded_message, &generate_gif_form.train
@@ -509,7 +515,7 @@ async fn post_generate(
 
     Ok((
         headers,
-        gif_markup(generate_gif_form.train, &generate_gif_form.message),
+        gif_markup(generate_gif_form.train, &sanitized_message),
     )
         .into_response())
 }
@@ -570,10 +576,10 @@ async fn get_gif_file(Path((size, train, message)): Path<(String, Train, String)
 }
 
 async fn get_index_markup(Query(params): Query<HashMap<String, String>>) -> Markup {
-    let message = params
+    let display_message = params
         .get("message")
-        .cloned()
-        .unwrap_or_else(|| "Welcome to the MTA display generator".into());
+        .map(|s| if s.is_empty() { DEFAULT_MESSAGE.into() } else { s.clone() })
+        .unwrap_or_else(|| DEFAULT_MESSAGE.into());
 
     let train = Train::from_str(&params.get("train").cloned().unwrap_or_else(|| "A".into()))
         .unwrap_or(Train::A);
@@ -592,7 +598,7 @@ async fn get_index_markup(Query(params): Query<HashMap<String, String>>) -> Mark
                 {
                     h1 { a href="/" { "MTA Display Generator" } }
 
-                    (gif_markup(train, &message))
+                    (gif_markup(train, &display_message))
 
                     h2 { "Make your own!" }
 
@@ -625,7 +631,9 @@ async fn get_index_markup(Query(params): Query<HashMap<String, String>>) -> Mark
                             id="message"
                             rows="4"
                             placeholder="Type your message here..." {
-                                (message)
+                                @if !(display_message == DEFAULT_MESSAGE) {
+                                    (display_message)
+                                }
                             }
                         br;
 
