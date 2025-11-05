@@ -188,7 +188,7 @@ fn get_gallery_entry_markup() -> Markup {
                     mx-4
                     "
                 {
-                    h1 { a href="/gallery" { "Submit to Gallery" } }
+                    h1 { "Submit to Gallery" }
 
                     form
                         hx-post="/gallery/entry"
@@ -313,7 +313,7 @@ fn get_gallery_review_markup(entries: Vec<GalleryEntry>) -> Markup {
                     mx-4
                     "
                 {
-                    h1 { a href="/gallery" { "Gallery Review" } }
+                    h1 { "Gallery Review" }
 
                     @for entry in entries {
                         @let i = format!("gallery-entry-{}", entry.id);
@@ -433,7 +433,7 @@ fn get_gallery_markup(entries: Vec<GalleryEntry>, banner: Option<String>) -> Mar
                     mx-4
                     "
                 {
-                    h1 class="mb-4" { a href="/" { "Gallery" } }
+                    h1 class="mb-4" { "Gallery" }
 
                     @if let Some(banner_msg) = banner {
                         div class=" bg-green-200 border border-green-400 text-green-800 px-4 py-3 rounded relative mb-4 " role="alert" {
@@ -606,7 +606,7 @@ async fn get_index_markup(Query(params): Query<HashMap<String, String>>) -> Mark
                     mx-4
                     "
                 {
-                    h1 { a href="/" { "MTA Display Generator" } }
+                    h1 { "MTA Display Generator" }
 
                     (gif_markup(train, &display_message))
 
