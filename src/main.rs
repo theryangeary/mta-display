@@ -114,7 +114,6 @@ async fn shutdown_signal() {
 struct Assets;
 
 async fn get_static_file(Path(path): Path<String>) -> impl IntoResponse {
-    tracing::info!("static");
     match Assets::get(&path) {
         Some(content) => {
             let mime = mime_guess::from_path(path).first_or_octet_stream();
@@ -551,6 +550,7 @@ fn gif_markup(train: Train, message: &str) -> Markup {
 }
 
 async fn get_gif_file(Path((size, train, message)): Path<(String, Train, String)>) -> Response {
+    tracing::info!("Generating GIF for size='{}', train='{:?}', message='{}'", size, train, message);
     let bulb_display_size = match BulbDisplaySize::from_str(&size) {
         Ok(s) => s,
         Err(e) => {
