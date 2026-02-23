@@ -14,8 +14,14 @@ fn main() {
         .output()
         .expect("failed to copy /static to $OUT_DIR");
 
+    // fail the build if input.css in the source directory does not exist or is empty
+    let input_css = manifest_path.join("input.css");
+    if !input_css.exists() || input_css.metadata().unwrap().len() == 0 {
+        panic!("input.css does not exist or is empty");
+    }
+
     // ./tailwindcss -i input.css -o static/output.css --minify
-    Command::new("./tailwindcss")
+    Command::new(manifest_path.join("tailwindcss"))
         .arg("-i")
         .arg("input.css")
         .arg("-o")
@@ -23,6 +29,11 @@ fn main() {
         .arg("--minify")
         .output()
         .expect("failed to compile tailwind styles");
+
+    Command::new("rm")
+        .arg(out_path.join("static").join("input.css"))
+        .output()
+        .expect("failed to remove input.css");
 
     Command::new("rm")
         .arg(out_path.join("static").join("input.css"))

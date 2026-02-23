@@ -20,9 +20,16 @@ RUN cargo chef cook --release --recipe-path recipe.json
 COPY . .
 
 RUN apt-get update && apt-get install -y curl
-RUN curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-arm64 \
-    && chmod +x tailwindcss-linux-arm64 \
-    && mv tailwindcss-linux-arm64 tailwindcss
+ARG TARGETARCH
+ARG TARGETOS
+RUN case "${TARGETARCH}" in \
+      amd64) TW_ARCH="x64" ;; \
+      arm64) TW_ARCH="arm64" ;; \
+      *) echo "Unsupported arch: ${TARGETARCH}"; exit 1 ;; \
+    esac \
+    && curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-${TARGETOS}-${TW_ARCH} \
+    && chmod +x tailwindcss-${TARGETOS}-${TW_ARCH} \
+    && mv tailwindcss-${TARGETOS}-${TW_ARCH} tailwindcss
 
 RUN cargo build --release
 
