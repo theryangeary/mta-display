@@ -218,7 +218,7 @@ fn get_gallery_entry_markup() -> Markup {
                             rows="4"
                             placeholder="Type your message here..."
                             required
-                            oninput="this.setCustomValidity(this.value.trim() === '' ? 'Message cannot be empty or whitespace' : '')"
+                            oninput="this.setCustomValidity(this.value.trim() === '' ? 'Message cannot be empty or whitespace' : ''); this.reportValidity();"
                             {}
                         br;
 
