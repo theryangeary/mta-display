@@ -216,7 +216,10 @@ fn get_gallery_entry_markup() -> Markup {
                             name="message"
                             id="message"
                             rows="4"
-                            placeholder="Type your message here..." {}
+                            placeholder="Type your message here..."
+                            required
+                            oninput="this.setCustomValidity(this.value.trim() === '' ? 'Message cannot be empty or whitespace' : '')"
+                            {}
                         br;
 
                         label class=" flex w-100% block mb-2" for="train" {
@@ -268,6 +271,11 @@ async fn post_gallery_entry(
     let train_str = gallery_entry_form.train;
     let submitter_name = gallery_entry_form.submitter_name;
     let description = gallery_entry_form.description;
+
+    // reject if message is empty or only whitespace
+    if message.trim().is_empty() {
+        return Err(StatusCode::BAD_REQUEST);
+    }
 
     db.create_gallery_entry(
         &message,
