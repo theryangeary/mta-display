@@ -3,6 +3,6 @@ name: Publish to GHCR.io
 on: [push]
 
 jobs:
-  call-workflow:
+  call-ci-workflow:
     uses: theryangeary/actions-workflows/.github/workflows/docker_build_and_push.yml@main
     secrets: inherit
