@@ -12,11 +12,11 @@ use std::io::Write;
 use std::sync::Arc;
 
 use axum::extract::{Path, Query, State};
-use axum::http::{header, HeaderMap, HeaderValue, StatusCode};
+use axum::http::{HeaderMap, HeaderValue, StatusCode, header};
 use axum::response::{IntoResponse, Response};
-use axum::{routing::get, Router};
 use axum::{Form, Json};
-use maud::{html, Markup, DOCTYPE};
+use axum::{Router, routing::get};
+use maud::{Markup, html};
 use serde::Deserialize;
 use tokio::signal;
 use tower_http::trace::TraceLayer;
@@ -30,7 +30,6 @@ use types::BulbDisplay;
 use types::BulbDisplayConfig;
 
 use crate::db::{Database, SqliteDatabase};
-use crate::models::GalleryEntry;
 use crate::types::{BulbDisplaySize, Train};
 
 const DEFAULT_MESSAGE: &str = "Welcome to the MTA display generator";
@@ -143,124 +142,34 @@ async fn health_check() -> Json<serde_json::Value> {
     }))
 }
 
-fn head(title: &str) -> Markup {
-    html! {
-        head {
-            (DOCTYPE)
-            meta charset="UTF-8" {};
-            meta name="viewport" content="width=device-width, initial-scale=1.0" {};
-            link rel="stylesheet" href="/static/output.css";
-            script src="/static/htmx.min.js" {};
-            title { (title) }
-        }
-    }
-}
-
-async fn get_gallery_entry() -> Markup {
-    get_gallery_entry_markup()
-}
-
-fn navbar_markup() -> Markup {
-    html! {
-        nav class=" bg-gray-200 p-4 mb-4 " {
-            div class=" max-w-7xl mx-auto flex items-center justify-between " {
-                a href="/" class=" text-black font-bold text-lg " { "MTA Display Generator" }
-                div class=" space-x-4 " {
-                    a href="/" class=" text-black hover:text-green-500 " { "Home" }
-                    a href="/gallery" class=" text-black hover:text-green-500 " { "Gallery" }
-                }
-            }
-        }
-    }
-}
-
-fn get_gallery_entry_markup() -> Markup {
-    html! {
-        (head("Create Gallery Entry"))
-        body {
-            (navbar_markup())
-            div class=" flex justify-center " {
-                div
-                    class="
-                    grid content-center
-                    max-w-4xl
-                    mx-4
-                    "
-                {
-                    h1 { "Submit to Gallery" }
-
-                    form
-                        hx-post="/gallery/entry"
-                        hx-target="body"
-                        class="bg-gray-200 border-gray-300 p-4 rounded-xl mb-4"
-                    {
-                        label class="flex w-100% block mb-2" for="message" {
-                            span class="flex-grow" { "Message: " }
-                            span class="flex-shrink relative group" {
-                                button type="button"
-                                    class="cursor-pointer focus:outline-none "
-                                    onclick="this.nextElementSibling.classList.toggle('hidden')"
-                                {
-                                    "ⓘ"
-                                }
-
-                                span class=" absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 -left-50 top-full mb-1 z-10 whitespace-nowrap " {
-                                    p class="mb-1" {"Max 6 rows, 14 characters per row. "}
-                                    p class="mb-1" {"Use linebreaks to separate pages manually. "}
-                                    p class="mb-1" {"Unsupported characters will be ignored." }
-                                }
-                            }
-                        }
-                        textarea
-                            class=" w-full p-2 mt-2 mb-4 bg-white border border-gray-600 rounded-lg text-black focus:outline-none focus:border-blue-500"
-                            name="message"
-                            id="message"
-                            rows="4"
-                            placeholder="Type your message here..."
-                            required
-                            oninput="this.setCustomValidity(this.value.trim() === '' ? 'Message cannot be empty or whitespace' : ''); this.reportValidity();"
-                            {}
-                        br;
-
-                        label class=" flex w-100% block mb-2" for="train" {
-                            span class="flex-grow" { "Train: " }
-                            (select_train())
-                        }
-
-                        label class=" flex w-100% block mb-2" for="submitter_name" {
-                            span class="flex-grow" { "Your Name (optional): " }
-                            input
-                                type="text"
-                                name="submitter_name"
-                                id="submitter_name"
-                                class=" ml-2 p-2 bg-white border border-gray-600 rounded-lg text-black focus:outline-none focus:border-blue-500 "
-                            ;
-                        }
-
-                        label class=" flex w-100% block mb-2" for="description" {
-                            span class="flex-grow" { "Caption (optional): " }
-                            textarea
-                                class=" w-full p-2 mt-2 mb-4 bg-white border border-gray-600 rounded-lg text-black focus:outline-none focus:border-blue-500"
-                                name="description"
-                                id="description"
-                                rows="4"
-                                placeholder="Caption your submission..." {}
-                        }
-
-                        button type="submit" class=" bg-yellow-500 text-black font-bold py-2 px-4 rounded hover:bg-yellow-600 " { "Submit to Gallery" }
-                    }
-                }
-            }
-        }
-    }
-}
-
 #[derive(Deserialize, Debug)]
 struct GalleryEntryForm {
     message: String,
     train: Train,
     submitter_name: Option<String>,
     description: Option<String>,
+}
+
+async fn get_index_markup(Query(params): Query<HashMap<String, String>>) -> Markup {
+    let display_message = params
+        .get("message")
+        .map(|s| {
+            if s.is_empty() {
+                DEFAULT_MESSAGE.into()
+            } else {
+                s.clone()
+            }
+        })
+        .unwrap_or_else(|| DEFAULT_MESSAGE.into());
+
+    let train = Train::from_str(&params.get("train").cloned().unwrap_or_else(|| "A".into()))
+        .unwrap_or(Train::A);
+
+    markup::index_markup(train, &display_message)
+}
+
+async fn get_gallery_entry() -> Markup {
+    markup::get_gallery_entry_markup()
 }
 
 async fn post_gallery_entry(
@@ -304,72 +213,7 @@ async fn get_gallery_review(State(db): State<Arc<dyn Database>>) -> Result<Marku
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
 
-    Ok(get_gallery_review_markup(entries))
-}
-
-fn get_gallery_review_markup(entries: Vec<GalleryEntry>) -> Markup {
-    html! {
-        (head("Gallery Review"))
-        body {
-            (navbar_markup())
-            div class=" flex justify-center " {
-                div
-                    class="
-                    grid content-center
-                    max-w-4xl
-                    mx-4
-                    "
-                {
-                    h1 { "Gallery Review" }
-
-                    @for entry in entries {
-                        @let i = format!("gallery-entry-{}", entry.id);
-                        div id=(i) class=" mb-8 " {
-                            div class=" flex justify-center mb-1 " {
-                                img
-                                    src=(&format!("/gif/sm/{}/{}", entry.train, urlencoding::encode(&entry.message)))
-                                    alt=(&format!("Generated MTA Display with message {}", entry.message))
-                                    class="h-auto max-w-full"
-                                ;
-                            }
-
-                            @if let Some(desc) = &entry.description {
-                                p class=" prose prose-sm mx-auto mb-2 " {
-                                    (desc)
-                                }
-                            }
-
-                            p class=" text-center text-sm text-gray-600 mb-2 " {
-                                "Submitted by "
-                                span class=" font-bold " {
-                                    @if entry.submitter_name.is_some() && !entry.submitter_name.as_ref().unwrap().is_empty() {
-                                        (entry.submitter_name.as_ref().unwrap())
-                                    } @else {
-                                        "anonymous"
-                                    }
-                                }
-                                " on "
-                                (entry.submitted_at.format("%Y-%m-%d"))
-                            }
-                            div class=" flex justify-center space-x-4 " {
-                                button
-                                    hx-put=(format!("/gallery/review/{}/approve", entry.id))
-                                    hx-target=(format!("#{}", i))
-                                    class=" bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600 "
-                                { "Approve" }
-
-                                button
-                                    hx-delete=(format!("/gallery/review/{}/reject", entry.id))
-                                    hx-target=(format!("#{}", i))
-                                    class=" bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600 "
-                                { "Reject" }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+    Ok(markup::get_gallery_review_markup(entries))
 }
 
 async fn put_gallery_review_approve(
@@ -402,10 +246,10 @@ async fn get_gallery(State(db): State<Arc<dyn Database>>) -> Result<Markup, Stat
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
 
-    Ok(get_gallery_markup(entries, None))
+    Ok(markup::get_gallery_markup(entries, None))
 }
 
-async fn get_gallery_with_banner_markup(
+pub async fn get_gallery_with_banner_markup(
     State(db): State<Arc<dyn Database>>,
 ) -> Result<Response, StatusCode> {
     let entries = db.list_approved_gallery_entries().await.map_err(|e| {
@@ -419,77 +263,12 @@ async fn get_gallery_with_banner_markup(
 
     Ok((
         headers,
-        get_gallery_markup(
+        markup::get_gallery_markup(
             entries,
             Some("Your submission has been received and is pending approval.".into()),
         ),
     )
         .into_response())
-}
-
-fn get_gallery_markup(entries: Vec<GalleryEntry>, banner: Option<String>) -> Markup {
-    html! {
-        (head("Gallery"))
-        body {
-            (navbar_markup())
-            div class=" flex justify-center " {
-                div
-                    class="
-                    grid content-center
-                    max-w-4xl
-                    mx-4
-                    "
-                {
-                    h1 class="mb-4" { "Gallery" }
-
-                    @if let Some(banner_msg) = banner {
-                        div class=" bg-green-200 border border-green-400 text-green-800 px-4 py-3 rounded relative mb-4 " role="alert" {
-                            strong class=" font-bold " { "Success! " }
-                            span class=" block sm:inline " { (banner_msg) }
-                        }
-                    }
-
-                    // link to submit new entry page
-                    p class=" mb-8 w-full text-right " {
-                        a href="/gallery/entry" class=" text-blue-500 hover:underline text-right" { "✒ Create Submission" }
-                    }
-
-                    @for entry in entries {
-                        div class=" mb-8 " {
-                            div class=" flex justify-center mb-1 " {
-                                img
-                                    src=(&format!("/gif/sm/{}/{}", entry.train, urlencoding::encode(&entry.message)))
-                                    alt=(&format!("Generated MTA Display with message {}", entry.message))
-                                    class="h-auto max-w-full"
-                                ;
-                            }
-
-                            @if let Some(desc) = &entry.description {
-                                p class=" prose prose-sm mx-auto mb-2 " {
-                                    (desc)
-                                }
-                            }
-
-                            p class=" text-center text-sm text-gray-600 mb-2 " {
-                                "Submitted by "
-                                span class=" font-bold " {
-                                    @if entry.submitter_name.is_some() && !entry.submitter_name.as_ref().unwrap().is_empty() {
-                                        (entry.submitter_name.as_ref().unwrap())
-                                    } @else {
-                                        "anonymous"
-                                    }
-                                }
-                                " on "
-                                (entry.submitted_at.format("%Y-%m-%d"))
-                            }
-
-
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 
 #[derive(Deserialize, Debug)]
@@ -526,39 +305,18 @@ async fn post_generate(
 
     Ok((
         headers,
-        gif_markup(generate_gif_form.train, &sanitized_message),
+        markup::gif_markup(generate_gif_form.train, &sanitized_message),
     )
         .into_response())
 }
 
-fn gif_markup(train: Train, message: &str) -> Markup {
-    let url_encoded_message = urlencoding::encode(message);
-    html! {
-        div id="mta-sign-gif" {
-            div
-                class=" flex justify-center mb-4 "
-            {
-                img
-                    src=(&format!("/gif/md/{}/{}", train, url_encoded_message))
-                    alt=(&format!("Generated MTA Display with message {}", message))
-                    class="h-auto max-w-full"
-                ;
-            }
-
-            div class=" mb-8 flex justify-center " {
-                div class=" divide-x-1 divide-yellow-700 rounded-xl " {
-                    button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 rounded-l-xl" { a target="_blank" href=(format!("/gif/sm/{}/{}", train, url_encoded_message)) { "Small" } }
-                    button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 " { a target="_blank" href=(format!("/gif/md/{}/{}", train, url_encoded_message)) { "Medium" } }
-                    button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 " { a target="_blank" href=(format!("/gif/lg/{}/{}", train, url_encoded_message)) { "Large" } }
-                    button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 rounded-r-xl" { a target="_blank" href=(format!("/gif/xl/{}/{}", train, url_encoded_message)) { "Extra Large" } }
-                }
-            }
-        }
-    }
-}
-
 async fn get_gif_file(Path((size, train, message)): Path<(String, Train, String)>) -> Response {
-    tracing::info!("Generating GIF for size='{}', train='{:?}', message='{}'", size, train, message);
+    tracing::info!(
+        "Generating GIF for size='{}', train='{:?}', message='{}'",
+        size,
+        train,
+        message
+    );
     let bulb_display_size = match BulbDisplaySize::from_str(&size) {
         Ok(s) => s,
         Err(e) => {
@@ -585,154 +343,6 @@ async fn get_gif_file(Path((size, train, message)): Path<(String, Train, String)
     headers.insert(header::CONTENT_TYPE, HeaderValue::from_static("image/gif"));
 
     (headers, gif_data).into_response()
-}
-
-async fn get_index_markup(Query(params): Query<HashMap<String, String>>) -> Markup {
-    let display_message = params
-        .get("message")
-        .map(|s| {
-            if s.is_empty() {
-                DEFAULT_MESSAGE.into()
-            } else {
-                s.clone()
-            }
-        })
-        .unwrap_or_else(|| DEFAULT_MESSAGE.into());
-
-    let train = Train::from_str(&params.get("train").cloned().unwrap_or_else(|| "A".into()))
-        .unwrap_or(Train::A);
-
-    html! {
-        (head("MTA Display Generator"))
-        body {
-            (navbar_markup())
-            div class="flex justify-center" {
-                div
-                    class="
-                    grid content-center
-                    max-w-lg
-                    mx-4
-                    "
-                {
-                    h1 { "MTA Display Generator" }
-
-                    (gif_markup(train, &display_message))
-
-                    h2 { "Make your own!" }
-
-                    form
-                        hx-post="/generate"
-                        hx-target="#mta-sign-gif"
-                        hx-swap="outerHTML"
-                        class="bg-gray-200 border-gray-300 p-4 rounded-xl mb-4"
-                    {
-                        label class="flex w-100% block mb-2" for="message" {
-                            span class="flex-grow" { "Message: " }
-                            span class="flex-shrink relative group" {
-                                button type="button"
-                                    class="cursor-pointer focus:outline-none "
-                                    onclick="this.nextElementSibling.classList.toggle('hidden')"
-                                {
-                                    "ⓘ"
-                                }
-
-                                span class=" absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 -left-50 top-full mb-1 z-10 whitespace-nowrap " {
-                                    p class="mb-1" {"Max 6 rows, 14 characters per row. "}
-                                    p class="mb-1" {"Use linebreaks to separate pages manually. "}
-                                    p class="mb-1" {"Unsupported characters will be ignored." }
-                                }
-                            }
-                        }
-                        textarea
-                            class=" w-full p-2 mt-2 mb-4 bg-white border border-gray-600 rounded-lg text-black focus:outline-none focus:border-blue-500"
-                            name="message"
-                            id="message"
-                            rows="4"
-                            placeholder="Type your message here..." {
-                                @if !(display_message == DEFAULT_MESSAGE) {
-                                    (display_message)
-                                }
-                            }
-                        br;
-
-                        label class=" flex w-100% block mb-2" for="train" {
-                            span class="flex-grow" { "Train: " }
-                            (select_train())
-                        }
-
-                        button type="submit" class=" bg-yellow-500 text-black font-bold py-2 px-4 rounded hover:bg-yellow-600 " { "Generate" }
-                    }
-
-                    h2 { "Gallery" }
-                    p class="prose" { "Check out the " a class="underline underline-offset-2 hover:decoration-2" href="/gallery" { "gallery" } " to see submissions from other users, or submit your own!" }
-
-                    h2 { "About"}
-                    p class="prose" { r#"
-                        One day I was on the Subway, deep in thought, when I noticed the train car I was on had this
-                        display for captions of the announcements. At that moment it was conveying a message about
-                        how it is "# 
-                        span class="font-mono font-bold" {"unlawful to consume alcohol in the system"} 
-                        r#". The incongruity of the display that usually cycles through the time, destination, and next
-                        stops showing "#
-                        span class="font-mono font-bold" { r#""CONSUME" "ALCOHOL""# }
-                        r#" threw me - and that's when I started pondering showing
-                        arbitrary messages on those displays."# 
-                    }
-                    p class="prose" { r#"
-                        From this rabbit hole this fun side project that generates GIFs that simulate those same displays
-                        was born. It is modeled after the displays inside the newest Subway cars which have been around
-                        since 2023."# 
-                    }
-                    img src="/static/irlexample.png" alt="Example of an MTA Subway display inside a subway car" class="h-auto max-w-full my-4";
-                    p class="prose" { r#"
-                        Send your friends a funny message or leave one for future visitors to see in the gallery."#
-                    }
-                    p class="prose" {
-                        "If you enjoy this, please consider "
-                        a class="underline underline-offset-2 hover:decoration-2" href="https://github.com/theryangeary/mta-display/issues" {
-                            "contributing photos of real MTA displays or character layout improvements"
-                        }
-                        ", as the \"font\" used here is not true to the actual MTA display font and I need reference materials."
-                    }
-                }
-            }
-        }
-    }
-}
-
-fn select_train() -> Markup {
-    html! {
-        // todo layout all bullets in a grid for selection
-        select
-            name="train"
-            id="train"
-            class=" ml-2 p-2 bg-white border border-gray-600 rounded-lg text-black focus:outline-none focus:border-blue-500 "
-        {
-            option value="One" { "1" }
-            option value="Two" { "2" }
-            option value="Three" { "3" }
-            option value="Four" { "4" }
-            option value="Five" { "5" }
-            option value="Six" { "6" }
-            option value="Seven" { "7" }
-            option value="A" { "A" }
-            option value="B" { "B" }
-            option value="C" { "C" }
-            option value="D" { "D" }
-            option value="E" { "E" }
-            option value="F" { "F" }
-            option value="G" { "G" }
-            option value="J" { "J" }
-            option value="L" { "L" }
-            option value="M" { "M" }
-            option value="N" { "N" }
-            option value="Q" { "Q" }
-            option value="R" { "R" }
-            option value="S" { "S" }
-            option value="W" { "W" }
-            option value="Z" { "Z" }
-        }
-    }
 }
 
 fn write_frames_to_gif_at_path(
@@ -897,7 +507,7 @@ fn write_text(
 
     let mut next_char_start_column = left_pad;
 
-    'CHARS: for (i, c) in message.chars().enumerate() {
+    'CHARS: for (_, c) in message.chars().enumerate() {
         let char_pattern = pattern::pattern_for_letter(c);
 
         for (row_num, row) in char_pattern.iter().enumerate() {
@@ -916,6 +526,410 @@ fn write_text(
         ret += 1;
     }
     Ok(ret)
+}
+
+mod markup {
+    use super::DEFAULT_MESSAGE;
+    use crate::models::GalleryEntry;
+    use crate::types::Train;
+    use maud::{DOCTYPE, Markup, html};
+
+    fn head(title: &str) -> Markup {
+        html! {
+            head {
+                (DOCTYPE)
+                meta charset="UTF-8" {};
+                meta name="viewport" content="width=device-width, initial-scale=1.0" {};
+                link rel="stylesheet" href="/static/output.css";
+                script src="/static/htmx.min.js" {};
+                title { (title) }
+            }
+        }
+    }
+
+    pub fn navbar_markup() -> Markup {
+        html! {
+            nav class=" bg-gray-200 p-4 mb-4 " {
+                div class=" max-w-7xl mx-auto flex items-center justify-between " {
+                    a href="/" class=" text-black font-bold text-lg " { "MTA Display Generator" }
+                    div class=" space-x-4 " {
+                        a href="/" class=" text-black hover:text-green-500 " { "Home" }
+                        a href="/gallery" class=" text-black hover:text-green-500 " { "Gallery" }
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn get_gallery_entry_markup() -> Markup {
+        html! {
+            (head("Create Gallery Entry"))
+            body {
+                (navbar_markup())
+                div class=" flex justify-center " {
+                    div
+                        class="
+                    grid content-center
+                    max-w-4xl
+                    mx-4
+                    "
+                    {
+                        h1 { "Submit to Gallery" }
+
+                        form
+                            hx-post="/gallery/entry"
+                            hx-target="body"
+                            class="bg-gray-200 border-gray-300 p-4 rounded-xl mb-4"
+                        {
+                            label class="flex w-100% block mb-2" for="message" {
+                                span class="flex-grow" { "Message: " }
+                                span class="flex-shrink relative group" {
+                                    button type="button"
+                                        class="cursor-pointer focus:outline-none "
+                                        onclick="this.nextElementSibling.classList.toggle('hidden')"
+                                    {
+                                        "ⓘ"
+                                    }
+
+                                    span class=" absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 -left-50 top-full mb-1 z-10 whitespace-nowrap " {
+                                        p class="mb-1" {"Max 6 rows, 14 characters per row. "}
+                                        p class="mb-1" {"Use linebreaks to separate pages manually. "}
+                                        p class="mb-1" {"Unsupported characters will be ignored." }
+                                    }
+                                }
+                            }
+                            textarea
+                                class=" w-full p-2 mt-2 mb-4 bg-white border border-gray-600 rounded-lg text-black focus:outline-none focus:border-blue-500"
+                                name="message"
+                                id="message"
+                                rows="4"
+                                placeholder="Type your message here..."
+                                required
+                                oninput="this.setCustomValidity(this.value.trim() === '' ? 'Message cannot be empty or whitespace' : ''); this.reportValidity();"
+                                {}
+                            br;
+
+                            label class=" flex w-100% block mb-2" for="train" {
+                                span class="flex-grow" { "Train: " }
+                                (select_train())
+                            }
+
+                            label class=" flex w-100% block mb-2" for="submitter_name" {
+                                span class="flex-grow" { "Your Name (optional): " }
+                                input
+                                    type="text"
+                                    name="submitter_name"
+                                    id="submitter_name"
+                                    class=" ml-2 p-2 bg-white border border-gray-600 rounded-lg text-black focus:outline-none focus:border-blue-500 "
+                                ;
+                            }
+
+                            label class=" flex w-100% block mb-2" for="description" {
+                                span class="flex-grow" { "Caption (optional): " }
+                                textarea
+                                    class=" w-full p-2 mt-2 mb-4 bg-white border border-gray-600 rounded-lg text-black focus:outline-none focus:border-blue-500"
+                                    name="description"
+                                    id="description"
+                                    rows="4"
+                                    placeholder="Caption your submission..." {}
+                            }
+
+                            button type="submit" class=" bg-yellow-500 text-black font-bold py-2 px-4 rounded hover:bg-yellow-600 " { "Submit to Gallery" }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn get_gallery_review_markup(entries: Vec<GalleryEntry>) -> Markup {
+        html! {
+            (head("Gallery Review"))
+            body {
+                (navbar_markup())
+                div class=" flex justify-center " {
+                    div
+                        class="
+                    grid content-center
+                    max-w-4xl
+                    mx-4
+                    "
+                    {
+                        h1 { "Gallery Review" }
+
+                        @for entry in entries {
+                            @let i = format!("gallery-entry-{}", entry.id);
+                            div id=(i) class=" mb-8 " {
+                                div class=" flex justify-center mb-1 " {
+                                    img
+                                        src=(&format!("/gif/sm/{}/{}", entry.train, urlencoding::encode(&entry.message)))
+                                        alt=(&format!("Generated MTA Display with message {}", entry.message))
+                                        class="h-auto max-w-full"
+                                    ;
+                                }
+
+                                @if let Some(desc) = &entry.description {
+                                    p class=" prose prose-sm mx-auto mb-2 " {
+                                        (desc)
+                                    }
+                                }
+
+                                p class=" text-center text-sm text-gray-600 mb-2 " {
+                                    "Submitted by "
+                                    span class=" font-bold " {
+                                        @if entry.submitter_name.is_some() && !entry.submitter_name.as_ref().unwrap().is_empty() {
+                                            (entry.submitter_name.as_ref().unwrap())
+                                        } @else {
+                                            "anonymous"
+                                        }
+                                    }
+                                    " on "
+                                    (entry.submitted_at.format("%Y-%m-%d"))
+                                }
+                                div class=" flex justify-center space-x-4 " {
+                                    button
+                                        hx-put=(format!("/gallery/review/{}/approve", entry.id))
+                                        hx-target=(format!("#{}", i))
+                                        class=" bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600 "
+                                    { "Approve" }
+
+                                    button
+                                        hx-delete=(format!("/gallery/review/{}/reject", entry.id))
+                                        hx-target=(format!("#{}", i))
+                                        class=" bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600 "
+                                    { "Reject" }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn get_gallery_markup(entries: Vec<GalleryEntry>, banner: Option<String>) -> Markup {
+        html! {
+            (head("Gallery"))
+            body {
+                (navbar_markup())
+                div class=" flex justify-center " {
+                    div
+                        class="
+                    grid content-center
+                    max-w-4xl
+                    mx-4
+                    "
+                    {
+                        h1 class="mb-4" { "Gallery" }
+
+                        @if let Some(banner_msg) = banner {
+                            div class=" bg-green-200 border border-green-400 text-green-800 px-4 py-3 rounded relative mb-4 " role="alert" {
+                                strong class=" font-bold " { "Success! " }
+                                span class=" block sm:inline " { (banner_msg) }
+                            }
+                        }
+
+                        // link to submit new entry page
+                        p class=" mb-8 w-full text-right " {
+                            a href="/gallery/entry" class=" text-blue-500 hover:underline text-right" { "✒ Create Submission" }
+                        }
+
+                        @for entry in entries {
+                            div class=" mb-8 " {
+                                div class=" flex justify-center mb-1 " {
+                                    img
+                                        src=(&format!("/gif/sm/{}/{}", entry.train, urlencoding::encode(&entry.message)))
+                                        alt=(&format!("Generated MTA Display with message {}", entry.message))
+                                        class="h-auto max-w-full"
+                                    ;
+                                }
+
+                                @if let Some(desc) = &entry.description {
+                                    p class=" prose prose-sm mx-auto mb-2 " {
+                                        (desc)
+                                    }
+                                }
+
+                                p class=" text-center text-sm text-gray-600 mb-2 " {
+                                    "Submitted by "
+                                    span class=" font-bold " {
+                                        @if entry.submitter_name.is_some() && !entry.submitter_name.as_ref().unwrap().is_empty() {
+                                            (entry.submitter_name.as_ref().unwrap())
+                                        } @else {
+                                            "anonymous"
+                                        }
+                                    }
+                                    " on "
+                                    (entry.submitted_at.format("%Y-%m-%d"))
+                                }
+
+
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    pub fn gif_markup(train: Train, message: &str) -> Markup {
+        let url_encoded_message = urlencoding::encode(message);
+        html! {
+            div id="mta-sign-gif" {
+                div
+                    class=" flex justify-center mb-4 "
+                {
+                    img
+                        src=(&format!("/gif/md/{}/{}", train, url_encoded_message))
+                        alt=(&format!("Generated MTA Display with message {}", message))
+                        class="h-auto max-w-full"
+                    ;
+                }
+
+                div class=" mb-8 flex justify-center " {
+                    div class=" divide-x-1 divide-yellow-700 rounded-xl " {
+                        button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 rounded-l-xl" { a target="_blank" href=(format!("/gif/sm/{}/{}", train, url_encoded_message)) { "Small" } }
+                        button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 " { a target="_blank" href=(format!("/gif/md/{}/{}", train, url_encoded_message)) { "Medium" } }
+                        button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 " { a target="_blank" href=(format!("/gif/lg/{}/{}", train, url_encoded_message)) { "Large" } }
+                        button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 rounded-r-xl" { a target="_blank" href=(format!("/gif/xl/{}/{}", train, url_encoded_message)) { "Extra Large" } }
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn index_markup(train: Train, display_message: &str) -> Markup {
+        html! {
+            (head("MTA Display Generator"))
+            body {
+                (navbar_markup())
+                div class="flex justify-center" {
+                    div
+                        class="
+                    grid content-center
+                    max-w-lg
+                    mx-4
+                    "
+                    {
+                        h1 { "MTA Display Generator" }
+
+                        (gif_markup(train, &display_message))
+
+                        h2 { "Make your own!" }
+
+                        form
+                            hx-post="/generate"
+                            hx-target="#mta-sign-gif"
+                            hx-swap="outerHTML"
+                            class="bg-gray-200 border-gray-300 p-4 rounded-xl mb-4"
+                        {
+                            label class="flex w-100% block mb-2" for="message" {
+                                span class="flex-grow" { "Message: " }
+                                span class="flex-shrink relative group" {
+                                    button type="button"
+                                        class="cursor-pointer focus:outline-none "
+                                        onclick="this.nextElementSibling.classList.toggle('hidden')"
+                                    {
+                                        "ⓘ"
+                                    }
+
+                                    span class=" absolute hidden group-hover:block bg-gray-800 text-white text-xs rounded py-1 px-2 -left-50 top-full mb-1 z-10 whitespace-nowrap " {
+                                        p class="mb-1" {"Max 6 rows, 14 characters per row. "}
+                                        p class="mb-1" {"Use linebreaks to separate pages manually. "}
+                                        p class="mb-1" {"Unsupported characters will be ignored." }
+                                    }
+                                }
+                            }
+                            textarea
+                                class=" w-full p-2 mt-2 mb-4 bg-white border border-gray-600 rounded-lg text-black focus:outline-none focus:border-blue-500"
+                                name="message"
+                                id="message"
+                                rows="4"
+                                placeholder="Type your message here..." {
+                                    @if !(display_message == DEFAULT_MESSAGE) {
+                                        (display_message)
+                                    }
+                                }
+                            br;
+
+                            label class=" flex w-100% block mb-2" for="train" {
+                                span class="flex-grow" { "Train: " }
+                                (select_train())
+                            }
+
+                            button type="submit" class=" bg-yellow-500 text-black font-bold py-2 px-4 rounded hover:bg-yellow-600 " { "Generate" }
+                        }
+
+                        h2 { "Gallery" }
+                        p class="prose" { "Check out the " a class="underline underline-offset-2 hover:decoration-2" href="/gallery" { "gallery" } " to see submissions from other users, or submit your own!" }
+
+                        h2 { "About"}
+                        p class="prose" { r#"
+                        One day I was on the Subway, deep in thought, when I noticed the train car I was on had this
+                        display for captions of the announcements. At that moment it was conveying a message about
+                        how it is "# 
+                            span class="font-mono font-bold" {"unlawful to consume alcohol in the system"}
+                            r#". The incongruity of the display that usually cycles through the time, destination, and next
+                            stops showing "#
+                            span class="font-mono font-bold" { r#""CONSUME" "ALCOHOL""# }
+                            r#" threw me - and that's when I started pondering showing
+                            arbitrary messages on those displays."#
+                        }
+                        p class="prose" { r#"
+                        From this rabbit hole this fun side project that generates GIFs that simulate those same displays
+                        was born. It is modeled after the displays inside the newest Subway cars which have been around
+                        since 2023."# 
+                        }
+                        img src="/static/irlexample.png" alt="Example of an MTA Subway display inside a subway car" class="h-auto max-w-full my-4";
+                        p class="prose" { r#"
+                            Send your friends a funny message or leave one for future visitors to see in the gallery."#
+                        }
+                        p class="prose" {
+                            "If you enjoy this, please consider "
+                            a class="underline underline-offset-2 hover:decoration-2" href="https://github.com/theryangeary/mta-display/issues" {
+                                "contributing photos of real MTA displays or character layout improvements"
+                            }
+                            ", as the \"font\" used here is not true to the actual MTA display font and I need reference materials."
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fn select_train() -> Markup {
+        html! {
+            // todo layout all bullets in a grid for selection
+            select
+                name="train"
+                id="train"
+                class=" ml-2 p-2 bg-white border border-gray-600 rounded-lg text-black focus:outline-none focus:border-blue-500 "
+            {
+                option value="One" { "1" }
+                option value="Two" { "2" }
+                option value="Three" { "3" }
+                option value="Four" { "4" }
+                option value="Five" { "5" }
+                option value="Six" { "6" }
+                option value="Seven" { "7" }
+                option value="A" { "A" }
+                option value="B" { "B" }
+                option value="C" { "C" }
+                option value="D" { "D" }
+                option value="E" { "E" }
+                option value="F" { "F" }
+                option value="G" { "G" }
+                option value="J" { "J" }
+                option value="L" { "L" }
+                option value="M" { "M" }
+                option value="N" { "N" }
+                option value="Q" { "Q" }
+                option value="R" { "R" }
+                option value="S" { "S" }
+                option value="W" { "W" }
+                option value="Z" { "Z" }
+            }
+        }
+    }
 }
 
 #[cfg(test)]
