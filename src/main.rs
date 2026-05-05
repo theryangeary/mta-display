@@ -28,6 +28,14 @@ use types::BulbDisplayConfig;
 use crate::db::SqliteDatabase;
 use crate::types::{BulbDisplaySize, Train};
 
+mod envvars {
+        pub const DATABASE_URL: &str = "DATABASE_URL";
+        pub const BASE_URL: &str = "BASE_URL";
+        pub const NTFY_URL: &str = "NTFY_URL";
+        pub const NTFY_TOPIC: &str = "NTFY_TOPIC";
+        pub const NTFY_TOKEN: &str = "NTFY_TOKEN";
+}
+
 const DEFAULT_MESSAGE: &str = "Welcome to the MTA display generator";
 const MISSING_SUBMITTER_NAME_FALLBACK: &str = "anonymous";
 
@@ -48,17 +56,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite:gallery.db".to_string());
+    let database_url = env::var(envvars::DATABASE_URL).unwrap_or_else(|_| "sqlite:gallery.db".to_string());
     let db = Arc::new(SqliteDatabase::new(&database_url).await?);
 
-    let base_url = env::var("BASE_URL").unwrap_or_else(|_| "http://localhost:3000".to_string());
+    let base_url = env::var(envvars::BASE_URL).unwrap_or_else(|_| "http://localhost:3000".to_string());
 
-    let notifier: Arc<dyn notification::NotificationService> = match env::var("NTFY_URL") {
+    let notifier: Arc<dyn notification::NotificationService> = match env::var(envvars::NTFY_URL) {
         Ok(ntfy_url) => {
             let ntfy_topic =
-                env::var("NTFY_TOPIC").expect("NTFY_TOPIC must be set if NTFY_URL is set");
+                env::var(envvars::NTFY_TOPIC).expect("NTFY_TOPIC must be set if NTFY_URL is set");
             let ntfy_token =
-                env::var("NTFY_TOKEN").expect("NTFY_TOKEN must be set if NTFY_URL is set");
+                env::var(envvars::NTFY_TOKEN).expect("NTFY_TOKEN must be set if NTFY_URL is set");
             let client = reqwest::Client::builder()
                 .timeout(std::time::Duration::from_secs(10))
                 .build()
@@ -72,7 +80,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             })
         }
         Err(_) => {
-            tracing::warn!("NTFY_URL not set — submission notifications are disabled");
+            tracing::warn!("{} not set — submission notifications are disabled", envvars::NTFY_URL);
             Arc::new(notification::NoopNotificationService)
         }
     };
@@ -602,6 +610,7 @@ fn write_text(
 
 mod markup {
     use super::DEFAULT_MESSAGE;
+    use crate::MISSING_SUBMITTER_NAME_FALLBACK;
     use crate::{models::GalleryEntry, types};
     use crate::types::{BulbDisplaySize, Train};
     use maud::{html, Markup, DOCTYPE};
