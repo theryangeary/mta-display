@@ -12,11 +12,11 @@ use std::io::Write;
 use std::sync::Arc;
 
 use axum::extract::{Path, Query, State};
-use axum::http::{HeaderMap, HeaderValue, StatusCode, header};
+use axum::http::{header, HeaderMap, HeaderValue, StatusCode};
 use axum::response::{IntoResponse, Response};
+use axum::{routing::get, Router};
 use axum::{Form, Json};
-use axum::{Router, routing::get};
-use maud::{Markup, html};
+use maud::{html, Markup};
 use serde::Deserialize;
 use tokio::signal;
 use tower_http::trace::TraceLayer;
@@ -25,10 +25,17 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use types::BulbDisplay;
 use types::BulbDisplayConfig;
 
-use crate::db::{Database, SqliteDatabase};
+use crate::db::SqliteDatabase;
 use crate::types::{BulbDisplaySize, Train};
 
 const DEFAULT_MESSAGE: &str = "Welcome to the MTA display generator";
+const MISSING_SUBMITTER_NAME_FALLBACK: &str = "anonymous";
+
+pub struct AppState {
+    db: Arc<dyn db::Database>,
+    notifier: Arc<dyn notification::NotificationService>,
+    base_url: String,
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -43,6 +50,38 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let database_url = env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite:gallery.db".to_string());
     let db = Arc::new(SqliteDatabase::new(&database_url).await?);
+
+    let base_url = env::var("BASE_URL").unwrap_or_else(|_| "http://localhost:3000".to_string());
+
+    let notifier: Arc<dyn notification::NotificationService> = match env::var("NTFY_URL") {
+        Ok(ntfy_url) => {
+            let ntfy_topic =
+                env::var("NTFY_TOPIC").expect("NTFY_TOPIC must be set if NTFY_URL is set");
+            let ntfy_token =
+                env::var("NTFY_TOKEN").expect("NTFY_TOKEN must be set if NTFY_URL is set");
+            let client = reqwest::Client::builder()
+                .timeout(std::time::Duration::from_secs(10))
+                .build()
+                .expect("failed to build reqwest client");
+            tracing::info!("ntfy notifications enabled: {}/{}", ntfy_url, ntfy_topic);
+            Arc::new(notification::NtfyNotificationService {
+                client,
+                ntfy_url,
+                ntfy_topic,
+                ntfy_token,
+            })
+        }
+        Err(_) => {
+            tracing::warn!("NTFY_URL not set — submission notifications are disabled");
+            Arc::new(notification::NoopNotificationService)
+        }
+    };
+
+    let state = Arc::new(AppState {
+        db,
+        notifier,
+        base_url,
+    });
 
     let app = Router::new()
         .route("/", get(get_index_markup))
@@ -63,7 +102,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             delete(put_gallery_review_reject),
         )
         .layer(TraceLayer::new_for_http())
-        .with_state(db);
+        .with_state(state);
 
     // Run it on localhost:3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
@@ -169,7 +208,7 @@ async fn get_gallery_entry() -> Markup {
 }
 
 async fn post_gallery_entry(
-    State(db): State<Arc<dyn Database>>,
+    State(state): State<Arc<AppState>>,
     Form(gallery_entry_form): Form<GalleryEntryForm>,
 ) -> Result<Response, StatusCode> {
     let message = gallery_entry_form.message;
@@ -182,29 +221,58 @@ async fn post_gallery_entry(
         return Err(StatusCode::BAD_REQUEST);
     }
 
-    db.create_gallery_entry(
+    state
+        .db
+        .create_gallery_entry(
+            &message,
+            train_str,
+            submitter_name.as_deref(),
+            description.as_deref(),
+        )
+        .await
+        .map_err(|e| {
+            tracing::error!("failed to create gallery entry: {}", e);
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
+
+    let notifier = Arc::clone(&state.notifier);
+    let notif_message = message.clone();
+    let notif_train = gallery_entry_form.train.to_string();
+    let notif_submitter = submitter_name.clone();
+    let base_url = state.base_url.clone();
+    let gif_path = types::GifPath::new(
+        BulbDisplaySize::Small,
+        gallery_entry_form.train,
         &message,
-        train_str,
-        submitter_name.as_deref(),
-        description.as_deref(),
     )
-    .await
-    .map_err(|e| {
-        tracing::error!("failed to create gallery entry: {}", e);
-        StatusCode::INTERNAL_SERVER_ERROR
-    })?;
+    .to_url_path();
+
+    tokio::spawn(async move {
+        if let Err(e) = notifier
+            .send_submission_notification(
+                notif_submitter.as_deref(),
+                &notif_train,
+                &notif_message,
+                &base_url,
+                &gif_path,
+            )
+            .await
+        {
+            tracing::error!("failed to send submission notification: {}", e);
+        }
+    });
 
     let mut headers = HeaderMap::new();
     headers.insert(header::CONTENT_TYPE, HeaderValue::from_static("text/html"));
     headers.insert("hx-push-url", "/gallery".parse().unwrap());
 
-    let markup = get_gallery_with_banner_markup(State(db)).await?;
+    let markup = get_gallery_with_banner_markup(State(Arc::clone(&state))).await?;
 
     Ok((headers, markup).into_response())
 }
 
-async fn get_gallery_review(State(db): State<Arc<dyn Database>>) -> Result<Markup, StatusCode> {
-    let entries = db.list_pending_gallery_entries().await.map_err(|e| {
+async fn get_gallery_review(State(state): State<Arc<AppState>>) -> Result<Markup, StatusCode> {
+    let entries = state.db.list_pending_gallery_entries().await.map_err(|e| {
         tracing::error!("failed to get gallery entries: {}", e);
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
@@ -213,10 +281,10 @@ async fn get_gallery_review(State(db): State<Arc<dyn Database>>) -> Result<Marku
 }
 
 async fn put_gallery_review_approve(
-    State(db): State<Arc<dyn Database>>,
+    State(state): State<Arc<AppState>>,
     Path(id): Path<i64>,
 ) -> Result<Markup, StatusCode> {
-    db.approve_gallery_entry(id).await.map_err(|e| {
+    state.db.approve_gallery_entry(id).await.map_err(|e| {
         tracing::error!("failed to approve gallery entry {}: {}", id, e);
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
@@ -225,10 +293,10 @@ async fn put_gallery_review_approve(
 }
 
 async fn put_gallery_review_reject(
-    State(db): State<Arc<dyn Database>>,
+    State(state): State<Arc<AppState>>,
     Path(id): Path<i64>,
 ) -> Result<Markup, StatusCode> {
-    db.reject_gallery_entry(id).await.map_err(|e| {
+    state.db.reject_gallery_entry(id).await.map_err(|e| {
         tracing::error!("failed to reject gallery entry {}: {}", id, e);
         StatusCode::INTERNAL_SERVER_ERROR
     })?;
@@ -236,22 +304,30 @@ async fn put_gallery_review_reject(
     Ok(html! {div{}})
 }
 
-async fn get_gallery(State(db): State<Arc<dyn Database>>) -> Result<Markup, StatusCode> {
-    let entries = db.list_approved_gallery_entries().await.map_err(|e| {
-        tracing::error!("failed to get gallery entries: {}", e);
-        StatusCode::INTERNAL_SERVER_ERROR
-    })?;
+async fn get_gallery(State(state): State<Arc<AppState>>) -> Result<Markup, StatusCode> {
+    let entries = state
+        .db
+        .list_approved_gallery_entries()
+        .await
+        .map_err(|e| {
+            tracing::error!("failed to get gallery entries: {}", e);
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
 
     Ok(markup::get_gallery_markup(entries, None))
 }
 
 pub async fn get_gallery_with_banner_markup(
-    State(db): State<Arc<dyn Database>>,
+    State(state): State<Arc<AppState>>,
 ) -> Result<Response, StatusCode> {
-    let entries = db.list_approved_gallery_entries().await.map_err(|e| {
-        tracing::error!("failed to get gallery entries: {}", e);
-        StatusCode::INTERNAL_SERVER_ERROR
-    })?;
+    let entries = state
+        .db
+        .list_approved_gallery_entries()
+        .await
+        .map_err(|e| {
+            tracing::error!("failed to get gallery entries: {}", e);
+            StatusCode::INTERNAL_SERVER_ERROR
+        })?;
 
     let mut headers = HeaderMap::new();
     headers.insert(header::CONTENT_TYPE, HeaderValue::from_static("text/html"));
@@ -526,9 +602,9 @@ fn write_text(
 
 mod markup {
     use super::DEFAULT_MESSAGE;
-    use crate::models::GalleryEntry;
-    use crate::types::Train;
-    use maud::{DOCTYPE, Markup, html};
+    use crate::{models::GalleryEntry, types};
+    use crate::types::{BulbDisplaySize, Train};
+    use maud::{html, Markup, DOCTYPE};
 
     fn head(title: &str) -> Markup {
         html! {
@@ -658,7 +734,7 @@ mod markup {
                             div id=(i) class=" mb-8 " {
                                 div class=" flex justify-center mb-1 " {
                                     img
-                                        src=(&format!("/gif/sm/{}/{}", entry.train, urlencoding::encode(&entry.message)))
+                                        src=(types::GifPath::new(BulbDisplaySize::Small, entry.train, &entry.message).to_url_path())
                                         alt=(&format!("Generated MTA Display with message {}", entry.message))
                                         class="h-auto max-w-full"
                                     ;
@@ -676,7 +752,7 @@ mod markup {
                                         @if entry.submitter_name.is_some() && !entry.submitter_name.as_ref().unwrap().is_empty() {
                                             (entry.submitter_name.as_ref().unwrap())
                                         } @else {
-                                            "anonymous"
+                                            (MISSING_SUBMITTER_NAME_FALLBACK)
                                         }
                                     }
                                     " on "
@@ -734,7 +810,7 @@ mod markup {
                             div class=" mb-8 " {
                                 div class=" flex justify-center mb-1 " {
                                     img
-                                        src=(&format!("/gif/sm/{}/{}", entry.train, urlencoding::encode(&entry.message)))
+                                        src=(types::GifPath::new(BulbDisplaySize::Small, entry.train, &entry.message).to_url_path())
                                         alt=(&format!("Generated MTA Display with message {}", entry.message))
                                         class="h-auto max-w-full"
                                     ;
@@ -752,7 +828,7 @@ mod markup {
                                         @if entry.submitter_name.is_some() && !entry.submitter_name.as_ref().unwrap().is_empty() {
                                             (entry.submitter_name.as_ref().unwrap())
                                         } @else {
-                                            "anonymous"
+                                            (MISSING_SUBMITTER_NAME_FALLBACK)
                                         }
                                     }
                                     " on "
@@ -775,7 +851,8 @@ mod markup {
                     class=" flex justify-center mb-4 "
                 {
                     img
-                        src=(&format!("/gif/md/{}/{}", train, url_encoded_message))
+                        src=(
+                            types::GifPath::new(BulbDisplaySize::Medium, train, message).to_url_path())
                         alt=(&format!("Generated MTA Display with message {}", message))
                         class="h-auto max-w-full"
                     ;
@@ -783,10 +860,10 @@ mod markup {
 
                 div class=" mb-8 flex justify-center " {
                     div class=" divide-x-1 divide-yellow-700 rounded-xl " {
-                        button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 rounded-l-xl" { a target="_blank" href=(format!("/gif/sm/{}/{}", train, url_encoded_message)) { "Small" } }
-                        button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 " { a target="_blank" href=(format!("/gif/md/{}/{}", train, url_encoded_message)) { "Medium" } }
-                        button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 " { a target="_blank" href=(format!("/gif/lg/{}/{}", train, url_encoded_message)) { "Large" } }
-                        button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 rounded-r-xl" { a target="_blank" href=(format!("/gif/xl/{}/{}", train, url_encoded_message)) { "Extra Large" } }
+                        button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 rounded-l-xl" { a target="_blank" href=(types::GifPath::new(BulbDisplaySize::Small, train, message).to_url_path()) { "Small" } }
+                        button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 " { a target="_blank" href=(types::GifPath::new(BulbDisplaySize::Medium, train, message).to_url_path()) { "Medium" } }
+                        button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 " { a target="_blank" href=(types::GifPath::new(BulbDisplaySize::Large, train, message).to_url_path()) { "Large" } }
+                        button class="bg-yellow-500 text-black font-light text-sm py-2 px-4 hover:bg-yellow-600 rounded-r-xl" { a target="_blank" href=(types::GifPath::new(BulbDisplaySize::XLarge, train, message).to_url_path()) { "Extra Large" } }
                     }
                 }
             }
@@ -862,7 +939,7 @@ mod markup {
                         p class="prose" { r#"
                         One day I was on the Subway, deep in thought, when I noticed the train car I was on had this
                         display for captions of the announcements. At that moment it was conveying a message about
-                        how it is "# 
+                        how it is "#
                             span class="font-mono font-bold" {"unlawful to consume alcohol in the system"}
                             r#". The incongruity of the display that usually cycles through the time, destination, and next
                             stops showing "#
@@ -873,7 +950,7 @@ mod markup {
                         p class="prose" { r#"
                         From this rabbit hole this fun side project that generates GIFs that simulate those same displays
                         was born. It is modeled after the displays inside the newest Subway cars which have been around
-                        since 2023."# 
+                        since 2023."#
                         }
                         img src="/static/irlexample.png" alt="Example of an MTA Subway display inside a subway car" class="h-auto max-w-full my-4";
                         p class="prose" { r#"
@@ -987,14 +1064,85 @@ another newline";
     }
 }
 
+mod notification {
+    use anyhow::Result;
+    use crate::MISSING_SUBMITTER_NAME_FALLBACK;
+
+    #[async_trait::async_trait]
+    pub trait NotificationService: Send + Sync {
+        async fn send_submission_notification(
+            &self,
+            submitter_name: Option<&str>,
+            train: &str,
+            message: &str,
+            base_url: &str,
+            gif_path: &str,
+        ) -> Result<()>;
+    }
+
+    pub struct NtfyNotificationService {
+        pub client: reqwest::Client,
+        pub ntfy_url: String,
+        pub ntfy_topic: String,
+        pub ntfy_token: String,
+    }
+
+    #[async_trait::async_trait]
+    impl NotificationService for NtfyNotificationService {
+        async fn send_submission_notification(
+            &self,
+            submitter_name: Option<&str>,
+            train: &str,
+            message: &str,
+            base_url: &str,
+            gif_path: &str,
+        ) -> Result<()> {
+            let name = submitter_name.unwrap_or(MISSING_SUBMITTER_NAME_FALLBACK);
+            let body = format!(
+                "New gallery submission!\nSubmitter: {}\nTrain: {}\nMessage: {}\nPreview: {}{}\nReview: {}/gallery/review",
+                name, train, message, base_url, gif_path, base_url
+            );
+
+            let url = format!("{}/{}", self.ntfy_url, self.ntfy_topic);
+
+            self.client
+                .post(&url)
+                .bearer_auth(&self.ntfy_token)
+                .header("Content-Type", "text/plain")
+                .body(body)
+                .send()
+                .await?
+                .error_for_status()?;
+
+            Ok(())
+        }
+    }
+
+    pub struct NoopNotificationService;
+
+    #[async_trait::async_trait]
+    impl NotificationService for NoopNotificationService {
+        async fn send_submission_notification(
+            &self,
+            _submitter_name: Option<&str>,
+            _train: &str,
+            _message: &str,
+            _base_url: &str,
+            _gif_path: &str,
+        ) -> Result<()> {
+            Ok(())
+        }
+    }
+}
+
 mod db {
     use std::str::FromStr;
 
     use anyhow::Result;
     use sqlx::{
-        ConnectOptions, FromRow, Row, Sqlite,
         migrate::MigrateDatabase,
         sqlite::{SqliteConnectOptions, SqlitePool},
+        ConnectOptions, FromRow, Row, Sqlite,
     };
 
     use crate::{models::GalleryEntry, types::Train};
@@ -1133,7 +1281,7 @@ mod types {
 
     use crate::pattern;
 
-    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumString)]
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumString, strum::ToString)]
     pub enum BulbDisplaySize {
         #[strum(serialize = "xs")]
         XSmall,
@@ -1254,6 +1402,31 @@ mod types {
         Z,
     }
 
+    pub struct GifPath {
+        pub size: BulbDisplaySize,
+        pub train: Train,
+        pub message: String,
+    }
+
+    impl GifPath {
+        pub fn new(size: BulbDisplaySize, train: Train, message: &str) -> Self {
+            Self {
+                size,
+                train,
+                message: message.to_owned(),
+            }
+        }
+
+        pub fn to_url_path(&self) -> String {
+            format!(
+                "/gif/{}/{}/{}",
+                self.size.to_string(),
+                self.train,
+                urlencoding::encode(&self.message)
+            )
+        }
+    }
+
     #[cfg(test)]
     mod tests {
         use super::*;
@@ -1284,6 +1457,23 @@ mod types {
         }
 
         #[test]
+        fn test_bulb_display_size_to_debug() {
+            assert_eq!(BulbDisplaySize::XSmall.to_string(), "xs");
+            assert_eq!(BulbDisplaySize::Small.to_string(), "sm");
+            assert_eq!(BulbDisplaySize::Medium.to_string(), "md");
+            assert_eq!(BulbDisplaySize::Large.to_string(), "lg");
+            assert_eq!(BulbDisplaySize::XLarge.to_string(), "xl");
+        }
+
+        #[test]
+        fn test_url_generation() {
+            assert_eq!(
+                GifPath::new(BulbDisplaySize::Small, Train::A, "test message").to_url_path(),
+                "/gif/sm/A/test%20message"
+            )
+        }
+
+        #[test]
         fn test_train_from_str() {
             assert_eq!(Train::from_str("One").unwrap(), Train::One);
             assert_eq!(Train::from_str("A").unwrap(), Train::A);
@@ -1291,6 +1481,7 @@ mod types {
         }
     }
 }
+
 mod pattern {
     use image::Rgb;
 
